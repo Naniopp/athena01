@@ -258,7 +258,7 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
           {otp.map((d, i) => (
             <input
               key={i}
-              ref={(el) => (refs.current[i] = el)}
+              ref={(el) => { refs.current[i] = el; }}
               value={d}
               onChange={(e) => setDigit(i, e.target.value)}
               onKeyDown={(e) => {
