@@ -203,10 +203,11 @@ function Hero() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
+              asChild
               size="lg"
               className="rounded-full bg-accent px-6 text-white shadow-glow hover:bg-accent/90"
             >
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              <Link to="/signup">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button
               size="lg"
