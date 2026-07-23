@@ -153,12 +153,15 @@ function Nav() {
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link to="/dashboards">Dashboards</Link>
           </Button>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link to="/login">Login</Link>
+          </Button>
           <Button
             asChild
             size="sm"
             className="rounded-full bg-accent px-4 text-white shadow-glow hover:bg-accent/90"
           >
-            <Link to="/dashboards">Explore Demo <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            <Link to="/signup">Get Started <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
         </div>
       </div>
@@ -200,10 +203,11 @@ function Hero() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
+              asChild
               size="lg"
               className="rounded-full bg-accent px-6 text-white shadow-glow hover:bg-accent/90"
             >
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              <Link to="/signup">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button
               size="lg"
@@ -667,8 +671,11 @@ function FinalCTA() {
           platform for every role.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" className="rounded-full bg-accent px-6 text-white shadow-glow hover:bg-accent/90">
-            Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
+          <Button asChild size="lg" className="rounded-full bg-accent px-6 text-white shadow-glow hover:bg-accent/90">
+            <Link to="/signup">Get Started Now <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="rounded-full border-white/40 bg-white/5 px-6 text-white hover:bg-white/10 hover:text-white">
+            <Link to="/login">Login</Link>
           </Button>
           <Button
             size="lg"

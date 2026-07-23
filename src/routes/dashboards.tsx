@@ -113,9 +113,14 @@ function TopBar() {
             Roles
           </a>
         </nav>
-        <Button size="sm" className="rounded-full bg-accent px-4 text-white hover:bg-accent/90">
-          Get Started <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link to="/login">Login</Link>
+          </Button>
+          <Button asChild size="sm" className="rounded-full bg-accent px-4 text-white hover:bg-accent/90">
+            <Link to="/signup">Get Started <ArrowRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
