@@ -153,12 +153,15 @@ function Nav() {
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link to="/dashboards">Dashboards</Link>
           </Button>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link to="/login">Login</Link>
+          </Button>
           <Button
             asChild
             size="sm"
             className="rounded-full bg-accent px-4 text-white shadow-glow hover:bg-accent/90"
           >
-            <Link to="/dashboards">Explore Demo <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            <Link to="/signup">Get Started <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
         </div>
       </div>
