@@ -148,7 +148,7 @@ function SignupPage() {
             role={role ?? "student"}
             email={email}
             onBack={() => setStep(2)}
-            onFinish={() => navigate({ to: "/dashboards" })}
+            onFinish={finish}
           />
         )}
       </main>
