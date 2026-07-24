@@ -26,6 +26,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
+  }),
   head: () => ({
     meta: [
       { title: "Get started — ATHENA" },
@@ -109,6 +112,11 @@ function SignupPage() {
   const [role, setRole] = useState<Role | null>(null);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const finish = () => {
+    if (next) window.location.assign(next);
+    else navigate({ to: "/dashboards" });
+  };
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -140,7 +148,7 @@ function SignupPage() {
             role={role ?? "student"}
             email={email}
             onBack={() => setStep(2)}
-            onFinish={() => navigate({ to: "/dashboards" })}
+            onFinish={finish}
           />
         )}
       </main>
