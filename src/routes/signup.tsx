@@ -21,7 +21,9 @@ import {
   KeyRound,
   Cloud,
   DatabaseBackup,
+  Loader2,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -204,7 +206,12 @@ function StepRole({ role, onSelect, onContinue }: { role: Role | null; onSelect:
 
 function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; setEmail: (v: string) => void; onBack: () => void; onContinue: () => void }) {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [seconds, setSeconds] = useState(45);
+  const [seconds, setSeconds] = useState(0);
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -214,14 +221,74 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
   }, [seconds]);
 
   const filled = otp.every((c) => c !== "");
-  const displayEmail = email || "you@university.edu";
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const setDigit = (i: number, v: string) => {
-    const digit = v.replace(/\D/g, "").slice(-1);
+    const digits = v.replace(/\D/g, "");
+    if (!digits) {
+      const next = [...otp];
+      next[i] = "";
+      setOtp(next);
+      return;
+    }
+    if (digits.length > 1) {
+      // Paste flow
+      const next = [...otp];
+      for (let j = 0; j < 6 - i; j++) next[i + j] = digits[j] ?? "";
+      setOtp(next);
+      const focusIdx = Math.min(i + digits.length, 5);
+      refs.current[focusIdx]?.focus();
+      return;
+    }
     const next = [...otp];
-    next[i] = digit;
+    next[i] = digits;
     setOtp(next);
-    if (digit && i < 5) refs.current[i + 1]?.focus();
+    if (i < 5) refs.current[i + 1]?.focus();
+  };
+
+  const sendCode = async () => {
+    setError(null);
+    setInfo(null);
+    if (!emailValid) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    setSending(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/dashboards`,
+      },
+    });
+    setSending(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setSent(true);
+    setOtp(["", "", "", "", "", ""]);
+    setSeconds(45);
+    setInfo(`We sent a 6-digit code to ${email}.`);
+    setTimeout(() => refs.current[0]?.focus(), 50);
+  };
+
+  const verifyCode = async () => {
+    setError(null);
+    setInfo(null);
+    const token = otp.join("");
+    if (token.length !== 6) {
+      setError("Enter the 6-digit code.");
+      return;
+    }
+    setVerifying(true);
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    setVerifying(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    onContinue();
   };
 
   return (
@@ -239,14 +306,16 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
 
         <div className="mt-6 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">Verify Your Email</h2>
-          <p className="mt-1 text-sm text-muted-foreground">We've sent a 6-digit code to</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {sent ? "Enter the 6-digit code we sent to" : "We'll send a 6-digit verification code to"}
+          </p>
 
-          {email ? (
-            <p className="text-sm font-medium text-foreground">{displayEmail}</p>
+          {sent ? (
+            <p className="text-sm font-medium text-foreground">{email}</p>
           ) : (
             <input
               type="email"
-              placeholder="Enter your university email"
+              placeholder="you@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 w-full rounded-2xl border border-border bg-white px-4 py-2.5 text-center text-sm outline-none transition focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20"
@@ -254,43 +323,77 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
           )}
         </div>
 
-        <div className="mt-6 flex justify-center gap-2">
-          {otp.map((d, i) => (
-            <input
-              key={i}
-              ref={(el) => { refs.current[i] = el; }}
-              value={d}
-              onChange={(e) => setDigit(i, e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Backspace" && !otp[i] && i > 0) refs.current[i - 1]?.focus();
-              }}
-              inputMode="numeric"
-              maxLength={1}
-              className={[
-                "h-12 w-11 rounded-xl border text-center text-lg font-semibold outline-none transition sm:h-14 sm:w-12",
-                d ? "border-[#F97316] bg-[#F97316]/5 text-foreground scale-[1.03]" : "border-border bg-white text-foreground",
-                "focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20",
-              ].join(" ")}
-            />
-          ))}
-        </div>
+        {sent && (
+          <div className="mt-6 flex justify-center gap-2">
+            {otp.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => { refs.current[i] = el; }}
+                value={d}
+                onChange={(e) => setDigit(i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Backspace" && !otp[i] && i > 0) refs.current[i - 1]?.focus();
+                }}
+                inputMode="numeric"
+                maxLength={6}
+                className={[
+                  "h-12 w-11 rounded-xl border text-center text-lg font-semibold outline-none transition sm:h-14 sm:w-12",
+                  d ? "border-[#F97316] bg-[#F97316]/5 text-foreground scale-[1.03]" : "border-border bg-white text-foreground",
+                  "focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20",
+                ].join(" ")}
+              />
+            ))}
+          </div>
+        )}
 
-        <p className="mt-5 text-center text-xs text-muted-foreground">
-          {seconds > 0 ? (
-            <>Resend code in <span className="font-medium text-foreground">00:{seconds.toString().padStart(2, "0")}</span></>
-          ) : (
-            <button onClick={() => setSeconds(45)} className="font-medium text-accent hover:underline">Resend code</button>
-          )}
-        </p>
+        {error && (
+          <p className="mt-4 text-center text-xs font-medium text-red-600">{error}</p>
+        )}
+        {info && !error && (
+          <p className="mt-4 text-center text-xs text-muted-foreground">{info}</p>
+        )}
 
-        <button
-          disabled={!filled}
-          onClick={onContinue}
-          className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Verify & Continue
-          <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
-        </button>
+        {sent && (
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            {seconds > 0 ? (
+              <>Resend code in <span className="font-medium text-foreground">00:{seconds.toString().padStart(2, "0")}</span></>
+            ) : (
+              <button onClick={sendCode} disabled={sending} className="font-medium text-accent hover:underline disabled:opacity-50">
+                {sending ? "Sending…" : "Resend code"}
+              </button>
+            )}
+          </p>
+        )}
+
+        {!sent ? (
+          <button
+            disabled={!emailValid || sending}
+            onClick={sendCode}
+            className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+            {sending ? "Sending code…" : "Send Verification Code"}
+          </button>
+        ) : (
+          <button
+            disabled={!filled || verifying}
+            onClick={verifyCode}
+            className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {verifying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {verifying ? "Verifying…" : "Verify & Continue"}
+            {!verifying && <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />}
+          </button>
+        )}
+
+        {sent && (
+          <button
+            onClick={() => { setSent(false); setOtp(["", "", "", "", "", ""]); setError(null); setInfo(null); }}
+            className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            Use a different email
+          </button>
+        )}
       </div>
     </div>
   );
@@ -300,6 +403,15 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [university, setUniversity] = useState("Northbridge University");
+  const [idNumber, setIdNumber] = useState("");
+  const [department, setDepartment] = useState("Computer Science");
+  const [semester, setSemester] = useState("Semester 1");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const idLabel = useMemo(() => {
     if (role === "student") return "Student ID";
@@ -307,6 +419,38 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     if (role === "club") return "Club ID";
     return "Admin ID";
   }, [role]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!agree) return;
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== password2) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.updateUser({
+      password,
+      data: {
+        role,
+        full_name: fullName,
+        university,
+        id_number: idNumber,
+        department,
+        semester,
+      },
+    });
+    setSubmitting(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    onFinish();
+  };
 
   return (
     <div className="grid animate-rise-in gap-8 lg:grid-cols-[1fr_340px]">
@@ -320,16 +464,16 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
           <p className="mt-1 text-sm text-muted-foreground">Tell us a few details to set up your {role} account.</p>
         </div>
 
-        <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); if (agree) onFinish(); }}>
-          <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" />
-          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" defaultValue={email} type="email" />
-          <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} />
-          <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" />
-          <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} />
-          <SelectField label="Year / Semester" icon={<CalendarDays className="h-4 w-4" />} options={["Semester 1", "Semester 3", "Semester 5", "Semester 7"]} />
+        <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
+          <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" value={fullName} onChange={setFullName} />
+          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" value={email} onChange={() => {}} type="email" readOnly />
+          <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} value={university} onChange={setUniversity} />
+          <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" value={idNumber} onChange={setIdNumber} />
+          <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} value={department} onChange={setDepartment} />
+          <SelectField label="Year / Semester" icon={<CalendarDays className="h-4 w-4" />} options={["Semester 1", "Semester 3", "Semester 5", "Semester 7"]} value={semester} onChange={setSemester} />
 
-          <PasswordField label="Password" show={showPw} onToggle={() => setShowPw((s) => !s)} />
-          <PasswordField label="Confirm Password" show={showPw2} onToggle={() => setShowPw2((s) => !s)} />
+          <PasswordField label="Password" show={showPw} onToggle={() => setShowPw((s) => !s)} value={password} onChange={setPassword} />
+          <PasswordField label="Confirm Password" show={showPw2} onToggle={() => setShowPw2((s) => !s)} value={password2} onChange={setPassword2} />
 
           <label className="col-span-full flex items-start gap-2.5 text-sm text-muted-foreground">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border accent-[#F97316]" />
@@ -339,12 +483,17 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
             </span>
           </label>
 
+          {error && (
+            <p className="col-span-full text-sm font-medium text-red-600">{error}</p>
+          )}
+
           <button
             type="submit"
-            disabled={!agree}
+            disabled={!agree || submitting}
             className="group col-span-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Create Account
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {submitting ? "Creating account…" : "Create Account"}
             <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
           </button>
         </form>
@@ -383,25 +532,32 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
   );
 }
 
-function Field({ label, icon, placeholder, type = "text", defaultValue }: { label: string; icon: React.ReactNode; placeholder: string; type?: string; defaultValue?: string }) {
+function Field({ label, icon, placeholder, type = "text", value, onChange, readOnly }: { label: string; icon: React.ReactNode; placeholder: string; type?: string; value: string; onChange: (v: string) => void; readOnly?: boolean }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <span className="text-muted-foreground">{icon}</span>
-        <input type={type} defaultValue={defaultValue} placeholder={placeholder} className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          readOnly={readOnly}
+          placeholder={placeholder}
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
       </div>
     </div>
   );
 }
 
-function SelectField({ label, icon, options }: { label: string; icon: React.ReactNode; options: string[] }) {
+function SelectField({ label, icon, options, value, onChange }: { label: string; icon: React.ReactNode; options: string[]; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <span className="text-muted-foreground">{icon}</span>
-        <select className="w-full bg-transparent text-sm outline-none">
+        <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full bg-transparent text-sm outline-none">
           {options.map((o) => (
             <option key={o}>{o}</option>
           ))}
@@ -411,13 +567,19 @@ function SelectField({ label, icon, options }: { label: string; icon: React.Reac
   );
 }
 
-function PasswordField({ label, show, onToggle }: { label: string; show: boolean; onToggle: () => void }) {
+function PasswordField({ label, show, onToggle, value, onChange }: { label: string; show: boolean; onToggle: () => void; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <Lock className="h-4 w-4 text-muted-foreground" />
-        <input type={show ? "text" : "password"} placeholder="••••••••" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="••••••••"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
         <button type="button" onClick={onToggle} className="text-muted-foreground hover:text-foreground">
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
