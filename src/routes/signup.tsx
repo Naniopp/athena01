@@ -403,6 +403,15 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [university, setUniversity] = useState("Northbridge University");
+  const [idNumber, setIdNumber] = useState("");
+  const [department, setDepartment] = useState("Computer Science");
+  const [semester, setSemester] = useState("Semester 1");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const idLabel = useMemo(() => {
     if (role === "student") return "Student ID";
@@ -410,6 +419,38 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     if (role === "club") return "Club ID";
     return "Admin ID";
   }, [role]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!agree) return;
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== password2) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.updateUser({
+      password,
+      data: {
+        role,
+        full_name: fullName,
+        university,
+        id_number: idNumber,
+        department,
+        semester,
+      },
+    });
+    setSubmitting(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    onFinish();
+  };
 
   return (
     <div className="grid animate-rise-in gap-8 lg:grid-cols-[1fr_340px]">
@@ -423,16 +464,16 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
           <p className="mt-1 text-sm text-muted-foreground">Tell us a few details to set up your {role} account.</p>
         </div>
 
-        <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); if (agree) onFinish(); }}>
-          <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" />
-          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" defaultValue={email} type="email" />
-          <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} />
-          <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" />
-          <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} />
-          <SelectField label="Year / Semester" icon={<CalendarDays className="h-4 w-4" />} options={["Semester 1", "Semester 3", "Semester 5", "Semester 7"]} />
+        <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
+          <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" value={fullName} onChange={setFullName} />
+          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" value={email} onChange={() => {}} type="email" readOnly />
+          <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} value={university} onChange={setUniversity} />
+          <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" value={idNumber} onChange={setIdNumber} />
+          <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} value={department} onChange={setDepartment} />
+          <SelectField label="Year / Semester" icon={<CalendarDays className="h-4 w-4" />} options={["Semester 1", "Semester 3", "Semester 5", "Semester 7"]} value={semester} onChange={setSemester} />
 
-          <PasswordField label="Password" show={showPw} onToggle={() => setShowPw((s) => !s)} />
-          <PasswordField label="Confirm Password" show={showPw2} onToggle={() => setShowPw2((s) => !s)} />
+          <PasswordField label="Password" show={showPw} onToggle={() => setShowPw((s) => !s)} value={password} onChange={setPassword} />
+          <PasswordField label="Confirm Password" show={showPw2} onToggle={() => setShowPw2((s) => !s)} value={password2} onChange={setPassword2} />
 
           <label className="col-span-full flex items-start gap-2.5 text-sm text-muted-foreground">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border accent-[#F97316]" />
@@ -442,12 +483,17 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
             </span>
           </label>
 
+          {error && (
+            <p className="col-span-full text-sm font-medium text-red-600">{error}</p>
+          )}
+
           <button
             type="submit"
-            disabled={!agree}
+            disabled={!agree || submitting}
             className="group col-span-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Create Account
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {submitting ? "Creating account…" : "Create Account"}
             <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
           </button>
         </form>
