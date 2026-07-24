@@ -112,6 +112,11 @@ function SignupPage() {
   const [role, setRole] = useState<Role | null>(null);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const finish = () => {
+    if (next) window.location.assign(next);
+    else navigate({ to: "/dashboards" });
+  };
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
