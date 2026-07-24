@@ -532,25 +532,32 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
   );
 }
 
-function Field({ label, icon, placeholder, type = "text", defaultValue }: { label: string; icon: React.ReactNode; placeholder: string; type?: string; defaultValue?: string }) {
+function Field({ label, icon, placeholder, type = "text", value, onChange, readOnly }: { label: string; icon: React.ReactNode; placeholder: string; type?: string; value: string; onChange: (v: string) => void; readOnly?: boolean }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <span className="text-muted-foreground">{icon}</span>
-        <input type={type} defaultValue={defaultValue} placeholder={placeholder} className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          readOnly={readOnly}
+          placeholder={placeholder}
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
       </div>
     </div>
   );
 }
 
-function SelectField({ label, icon, options }: { label: string; icon: React.ReactNode; options: string[] }) {
+function SelectField({ label, icon, options, value, onChange }: { label: string; icon: React.ReactNode; options: string[]; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <span className="text-muted-foreground">{icon}</span>
-        <select className="w-full bg-transparent text-sm outline-none">
+        <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full bg-transparent text-sm outline-none">
           {options.map((o) => (
             <option key={o}>{o}</option>
           ))}
@@ -560,13 +567,19 @@ function SelectField({ label, icon, options }: { label: string; icon: React.Reac
   );
 }
 
-function PasswordField({ label, show, onToggle }: { label: string; show: boolean; onToggle: () => void }) {
+function PasswordField({ label, show, onToggle, value, onChange }: { label: string; show: boolean; onToggle: () => void; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
         <Lock className="h-4 w-4 text-muted-foreground" />
-        <input type={show ? "text" : "password"} placeholder="••••••••" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="••••••••"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
         <button type="button" onClick={onToggle} className="text-muted-foreground hover:text-foreground">
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
