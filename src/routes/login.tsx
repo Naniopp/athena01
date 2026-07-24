@@ -1,9 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2 } from "lucide-react";
 import heroCampus from "@/assets/hero-campus.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — ATHENA" },
