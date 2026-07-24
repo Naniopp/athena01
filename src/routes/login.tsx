@@ -45,6 +45,42 @@ function TopNav() {
 
 function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { next } = Route.useSearch();
+  const navigate = useNavigate();
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!email || !password) {
+      setError("Enter your email and password.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    if (next) window.location.assign(next);
+    else navigate({ to: "/dashboards" });
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    const redirectTo = next
+      ? `${window.location.origin}${next}`
+      : `${window.location.origin}/dashboards`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+    if (error) setError(error.message);
+  }
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -62,12 +98,12 @@ function LoginPage() {
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">Sign in to continue to your campus.</p>
 
-            <form className="mt-8 space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
                 <label className="text-sm font-medium text-foreground">Email Address</label>
                 <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <input type="email" placeholder="Enter your email" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
                 </div>
               </div>
 
@@ -75,7 +111,7 @@ function LoginPage() {
                 <label className="text-sm font-medium text-foreground">Password</label>
                 <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
                   <Lock className="h-4 w-4 text-muted-foreground" />
-                  <input type={showPw ? "text" : "password"} placeholder="Enter your password" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+                  <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
                   <button type="button" onClick={() => setShowPw((s) => !s)} className="text-muted-foreground hover:text-foreground">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -90,9 +126,12 @@ function LoginPage() {
                 <a href="#" className="font-medium text-accent hover:underline">Forgot Password?</a>
               </div>
 
-              <button className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105 active:translate-y-[1px]">
-                Sign In
-                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              {error && (
+                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+              )}
+
+              <button type="submit" disabled={busy} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105 active:translate-y-[1px] disabled:opacity-60">
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Sign In <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></>}
               </button>
 
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
