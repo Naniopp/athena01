@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2, KeyRound } from "lucide-react";
 import heroCampus from "@/assets/hero-campus.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { OtpVerify } from "@/components/OtpVerify";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
