@@ -45,6 +45,7 @@ function TopNav() {
 }
 
 function LoginPage() {
+  const [mode, setMode] = useState<"password" | "otp">("password");
   const [showPw, setShowPw] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,6 +53,11 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const { next } = Route.useSearch();
   const navigate = useNavigate();
+
+  const goNext = () => {
+    if (next) window.location.assign(next);
+    else navigate({ to: "/dashboards" });
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
