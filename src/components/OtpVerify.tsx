@@ -1,15 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  canSendOtp,
-  canVerifyOtp,
-  clearVerifyState,
-  humanizeOtpError,
-  isCodeExpired,
-  recordOtpSend,
-  recordVerifyAttempt,
-} from "@/lib/otp-rate-limit";
+import { ArrowLeft, ArrowRight, Mail, Loader2, CheckCircle2, AlertCircle, Info } from "lucide-react";
 
 type Mode = "signup" | "login";
 
@@ -32,20 +22,30 @@ type Status =
   | { kind: "error"; message: string }
   | { kind: "info"; message: string };
 
+const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_ATTEMPTS = 5;
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 export function OtpVerify({
-  mode,
+  mode: _mode,
   email,
   setEmail,
   onBack,
   onVerified,
   title = "Verify Your Email",
   subtitle,
-  resendSeconds = 45,
+  resendSeconds = 60,
 }: Props) {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [seconds, setSeconds] = useState(0);
   const [sent, setSent] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [issuedAt, setIssuedAt] = useState<number | null>(null);
+  const [attempts, setAttempts] = useState(0);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -54,19 +54,9 @@ export function OtpVerify({
     return () => clearTimeout(t);
   }, [seconds]);
 
-  // Expiration ticker — flip to error when the issued code passes TTL.
-  useEffect(() => {
-    if (!sent) return;
-    const t = setInterval(() => {
-      if (isCodeExpired(email)) {
-        setStatus({ kind: "error", message: "This code has expired. Request a new one to continue." });
-      }
-    }, 5000);
-    return () => clearInterval(t);
-  }, [sent, email]);
-
   const filled = otp.every((c) => c !== "");
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const expired = issuedAt !== null && Date.now() - issuedAt > CODE_TTL_MS;
 
   const setDigit = (i: number, v: string) => {
     const digits = v.replace(/\D/g, "");
@@ -95,32 +85,17 @@ export function OtpVerify({
       setStatus({ kind: "error", message: "Enter a valid email address." });
       return;
     }
-    const gate = canSendOtp(email);
-    if (!gate.ok) {
-      const mins = Math.ceil(gate.retryInSec / 60);
-      setStatus({
-        kind: "error",
-        message: `Too many code requests for this email. Try again in ~${mins} minute${mins === 1 ? "" : "s"}.`,
-      });
-      return;
-    }
     setStatus({ kind: "sending" });
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: mode === "signup",
-        emailRedirectTo: `${window.location.origin}/dashboards`,
-      },
-    });
-    if (error) {
-      setStatus({ kind: "error", message: humanizeOtpError(error.message) });
-      return;
-    }
-    recordOtpSend(email);
+    // Simulate network delay for realism
+    await new Promise((r) => setTimeout(r, 500));
+    const code = generateCode();
+    setGeneratedCode(code);
+    setIssuedAt(Date.now());
+    setAttempts(0);
     setSent(true);
     setOtp(["", "", "", "", "", ""]);
     setSeconds(resendSeconds);
-    setStatus({ kind: "info", message: `We sent a 6-digit code to ${email}. It expires in 10 minutes.` });
+    setStatus({ kind: "info", message: `Verification code generated for ${email}. It expires in 10 minutes.` });
     setTimeout(() => refs.current[0]?.focus(), 50);
   };
 
@@ -130,21 +105,33 @@ export function OtpVerify({
       setStatus({ kind: "error", message: "Enter the 6-digit code." });
       return;
     }
-    const gate = canVerifyOtp(email);
-    if (!gate.ok) {
-      setStatus({ kind: "error", message: gate.reason });
+    if (!generatedCode) {
+      setStatus({ kind: "error", message: "Please request a code first." });
+      return;
+    }
+    if (expired) {
+      setStatus({ kind: "error", message: "This code has expired. Request a new one to continue." });
+      return;
+    }
+    if (attempts >= MAX_ATTEMPTS) {
+      setStatus({ kind: "error", message: "Too many incorrect attempts. Please request a new code." });
       return;
     }
     setStatus({ kind: "verifying" });
-    recordVerifyAttempt(email);
-    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-    if (error) {
-      setStatus({ kind: "error", message: humanizeOtpError(error.message) });
+    await new Promise((r) => setTimeout(r, 400));
+    if (token !== generatedCode) {
+      setAttempts((a) => a + 1);
+      const remaining = MAX_ATTEMPTS - (attempts + 1);
+      setStatus({
+        kind: "error",
+        message:
+          remaining > 0
+            ? `Invalid verification code. ${remaining} attempt${remaining === 1 ? "" : "s"} remaining.`
+            : "Too many incorrect attempts. Please request a new code.",
+      });
       return;
     }
     setStatus({ kind: "success" });
-    clearVerifyState(email);
-    // brief success state before transitioning
     setTimeout(() => onVerified(), 700);
   };
 
@@ -178,8 +165,8 @@ export function OtpVerify({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {status.kind === "success"
-              ? "Signing you in…"
-              : subtitle ?? (sent ? "Enter the 6-digit code we sent to" : "We'll send a 6-digit verification code to")}
+              ? "Continuing…"
+              : subtitle ?? (sent ? "Enter the 6-digit code we generated for" : "We'll generate a 6-digit verification code for")}
           </p>
 
           {status.kind !== "success" && (
@@ -196,6 +183,19 @@ export function OtpVerify({
             )
           )}
         </div>
+
+        {sent && generatedCode && status.kind !== "success" && (
+          <div className="mt-5 flex items-start gap-2 rounded-xl border border-dashed border-[#F97316]/40 bg-[#F97316]/5 p-3 text-left text-xs text-foreground">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#F97316]" />
+            <div>
+              <div className="font-semibold text-[#F97316]">Developer Mode</div>
+              <div className="mt-0.5">
+                OTP: <span className="font-mono text-base font-bold tracking-[0.3em] text-foreground">{generatedCode}</span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">Shown for demo only. Hide in production.</div>
+            </div>
+          </div>
+        )}
 
         {sent && status.kind !== "success" && (
           <div className="mt-6 flex justify-center gap-2">
@@ -251,7 +251,7 @@ export function OtpVerify({
             className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {status.kind === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-            {status.kind === "sending" ? "Sending code…" : "Send Verification Code"}
+            {status.kind === "sending" ? "Generating code…" : "Send Verification Code"}
           </button>
         ) : status.kind !== "success" ? (
           <button
@@ -271,7 +271,14 @@ export function OtpVerify({
 
         {sent && status.kind !== "success" && (
           <button
-            onClick={() => { setSent(false); setOtp(["", "", "", "", "", ""]); setStatus({ kind: "idle" }); clearVerifyState(email); }}
+            onClick={() => {
+              setSent(false);
+              setOtp(["", "", "", "", "", ""]);
+              setStatus({ kind: "idle" });
+              setGeneratedCode(null);
+              setIssuedAt(null);
+              setAttempts(0);
+            }}
             className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
             Use a different email
