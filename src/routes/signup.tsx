@@ -24,6 +24,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { OtpVerify } from "@/components/OtpVerify";
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (s: Record<string, unknown>) => ({
