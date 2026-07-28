@@ -99,6 +99,24 @@ function LoginPage() {
       <main className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 items-center gap-10 px-6 pt-28 pb-16 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-16 lg:px-10 lg:pt-32">
         {/* LEFT — auth card */}
         <div className="animate-rise-in">
+          {mode === "otp" ? (
+            <div className="space-y-4">
+              <OtpVerify
+                mode="login"
+                email={email}
+                setEmail={setEmail}
+                onVerified={goNext}
+                title="Sign in with a code"
+                subtitle="We'll email you a 6-digit code to sign in without a password."
+              />
+              <button
+                onClick={() => { setMode("password"); setError(null); }}
+                className="mx-auto block text-center text-sm text-muted-foreground hover:text-foreground"
+              >
+                ← Use password instead
+              </button>
+            </div>
+          ) : (
           <div className="rounded-3xl border border-border/70 bg-white p-8 shadow-elegant sm:p-10">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Welcome <span className="text-accent">Back</span>
@@ -141,6 +159,14 @@ function LoginPage() {
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Sign In <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></>}
               </button>
 
+              <button
+                type="button"
+                onClick={() => { setMode("otp"); setError(null); }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground transition hover:bg-muted/60"
+              >
+                <KeyRound className="h-4 w-4 text-[#F97316]" /> Sign in with email code
+              </button>
+
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="h-px flex-1 bg-border" />
                 <span>OR</span>
@@ -162,6 +188,7 @@ function LoginPage() {
               </p>
             </form>
           </div>
+          )}
         </div>
 
         {/* RIGHT — brand + illustration */}
