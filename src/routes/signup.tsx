@@ -116,6 +116,7 @@ function SignupPage() {
   const { next } = Route.useSearch();
   const finish = () => {
     if (next) window.location.assign(next);
+    else if (role) navigate({ to: "/dashboard/$role", params: { role } });
     else navigate({ to: "/dashboards" });
   };
 
