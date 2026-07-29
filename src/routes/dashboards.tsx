@@ -50,6 +50,10 @@ import { Input } from "@/components/ui/input";
 import campusHero from "@/assets/dashboards-campus.png";
 
 export const Route = createFileRoute("/dashboards")({
+  validateSearch: (s: Record<string, unknown>): { role?: Role } => {
+    const r = s.role;
+    return r === "student" || r === "faculty" || r === "club" || r === "admin" ? { role: r } : {};
+  },
   head: () => ({
     meta: [
       { title: "Explore ATHENA Dashboards — Live Demo" },
@@ -79,7 +83,8 @@ const INK = "#111111";
    PAGE
    ========================================================= */
 function DashboardsPage() {
-  const [role, setRole] = useState<Role | null>(null);
+  const search = Route.useSearch();
+  const [role, setRole] = useState<Role | null>(search.role ?? null);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
