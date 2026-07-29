@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-const VALID = ["student", "faculty", "club", "admin"] as const;
+const VALID = ["faculty", "club", "admin"] as const;
 
 export const Route = createFileRoute("/dashboard/$role")({
   beforeLoad: ({ params }) => {
