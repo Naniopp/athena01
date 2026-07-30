@@ -112,6 +112,8 @@ function SignupPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [role, setRole] = useState<Role | null>(null);
   const [email, setEmail] = useState("");
+  const [direct, setDirect] = useState(false);
+  const [oauthError, setOauthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const finish = () => {
@@ -119,6 +121,23 @@ function SignupPage() {
     else if (role) navigate({ to: "/dashboard/$role", params: { role } });
     else navigate({ to: "/dashboards" });
   };
+
+  async function handleGoogle() {
+    setOauthError(null);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setOauthError(result.error.message ?? "Google sign-up failed.");
+        return;
+      }
+      if (result.redirected) return;
+      finish();
+    } catch (e) {
+      setOauthError(e instanceof Error ? e.message : "Google sign-up failed.");
+    }
+  }
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -134,7 +153,10 @@ function SignupPage() {
           <StepRole
             role={role}
             onSelect={setRole}
-            onContinue={() => role && setStep(2)}
+            onContinue={() => role && (setDirect(false), setStep(2))}
+            onDirect={() => role && (setDirect(true), setStep(3))}
+            onGoogle={handleGoogle}
+            oauthError={oauthError}
           />
         )}
         {step === 2 && (
@@ -149,7 +171,9 @@ function SignupPage() {
           <StepDetails
             role={role ?? "student"}
             email={email}
-            onBack={() => setStep(2)}
+            setEmail={setEmail}
+            direct={direct}
+            onBack={() => setStep(direct ? 1 : 2)}
             onFinish={finish}
           />
         )}
@@ -157,6 +181,7 @@ function SignupPage() {
     </div>
   );
 }
+
 
 function StepRole({ role, onSelect, onContinue }: { role: Role | null; onSelect: (r: Role) => void; onContinue: () => void }) {
   return (
