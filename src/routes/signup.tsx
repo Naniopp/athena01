@@ -24,7 +24,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
+
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -281,7 +283,7 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
 }
 
 
-function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: string; onBack: () => void; onFinish: () => void }) {
+function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role: Role; email: string; setEmail: (v: string) => void; direct: boolean; onBack: () => void; onFinish: () => void }) {
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -306,6 +308,10 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     e.preventDefault();
     setError(null);
     if (!agree) return;
+    if (direct && !/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
@@ -314,18 +320,22 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
       setError("Passwords do not match.");
       return;
     }
+    const metadata = {
+      role,
+      full_name: fullName,
+      university,
+      id_number: idNumber,
+      department,
+      semester,
+    };
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({
-      password,
-      data: {
-        role,
-        full_name: fullName,
-        university,
-        id_number: idNumber,
-        department,
-        semester,
-      },
-    });
+    const { error } = direct
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: metadata, emailRedirectTo: window.location.origin },
+        })
+      : await supabase.auth.updateUser({ password, data: metadata });
     setSubmitting(false);
     if (error) {
       setError(error.message);
@@ -333,6 +343,7 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     }
     onFinish();
   };
+
 
   return (
     <div className="grid animate-rise-in gap-8 lg:grid-cols-[1fr_340px]">
