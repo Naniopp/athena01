@@ -24,7 +24,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
+
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -112,6 +114,8 @@ function SignupPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [role, setRole] = useState<Role | null>(null);
   const [email, setEmail] = useState("");
+  const [direct, setDirect] = useState(false);
+  const [oauthError, setOauthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const finish = () => {
@@ -119,6 +123,23 @@ function SignupPage() {
     else if (role) navigate({ to: "/dashboard/$role", params: { role } });
     else navigate({ to: "/dashboards" });
   };
+
+  async function handleGoogle() {
+    setOauthError(null);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setOauthError(result.error.message ?? "Google sign-up failed.");
+        return;
+      }
+      if (result.redirected) return;
+      finish();
+    } catch (e) {
+      setOauthError(e instanceof Error ? e.message : "Google sign-up failed.");
+    }
+  }
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -134,7 +155,10 @@ function SignupPage() {
           <StepRole
             role={role}
             onSelect={setRole}
-            onContinue={() => role && setStep(2)}
+            onContinue={() => role && (setDirect(false), setStep(2))}
+            onDirect={() => role && (setDirect(true), setStep(3))}
+            onGoogle={handleGoogle}
+            oauthError={oauthError}
           />
         )}
         {step === 2 && (
@@ -149,7 +173,9 @@ function SignupPage() {
           <StepDetails
             role={role ?? "student"}
             email={email}
-            onBack={() => setStep(2)}
+            setEmail={setEmail}
+            direct={direct}
+            onBack={() => setStep(direct ? 1 : 2)}
             onFinish={finish}
           />
         )}
@@ -158,7 +184,17 @@ function SignupPage() {
   );
 }
 
-function StepRole({ role, onSelect, onContinue }: { role: Role | null; onSelect: (r: Role) => void; onContinue: () => void }) {
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.9 3.4 14.7 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12S6.7 21.6 12 21.6c6.9 0 9.4-4.8 9.4-9.3 0-.6-.1-1.1-.2-1.6H12z" />
+    </svg>
+  );
+}
+
+function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }: { role: Role | null; onSelect: (r: Role) => void; onContinue: () => void; onDirect: () => void; onGoogle: () => void; oauthError: string | null }) {
+
   return (
     <div className="mx-auto max-w-3xl animate-rise-in">
       <div className="text-center">
@@ -200,16 +236,36 @@ function StepRole({ role, onSelect, onContinue }: { role: Role | null; onSelect:
         })}
       </div>
 
-      <div className="mt-10 flex justify-center">
+      <div className="mx-auto mt-10 flex max-w-md flex-col items-stretch gap-3">
+        <button
+          disabled={!role}
+          onClick={onDirect}
+          className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Continue with email &amp; password
+          <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
+        </button>
+
+        <button
+          type="button"
+          disabled={!role}
+          onClick={onGoogle}
+          className="inline-flex items-center justify-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground transition enabled:hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <GoogleIcon /> Continue with Google
+        </button>
+
         <button
           disabled={!role}
           onClick={onContinue}
-          className="group inline-flex items-center gap-2 rounded-2xl bg-[#F97316] px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition enabled:hover:text-foreground disabled:opacity-40"
         >
-          Continue
-          <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
+          <KeyRound className="h-4 w-4 text-[#F97316]" /> Sign up with an email code instead
         </button>
+
+        {oauthError && <p className="text-center text-sm font-medium text-red-600">{oauthError}</p>}
       </div>
+
     </div>
   );
 }
@@ -227,7 +283,7 @@ function StepVerify({ email, setEmail, onBack, onContinue }: { email: string; se
 }
 
 
-function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: string; onBack: () => void; onFinish: () => void }) {
+function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role: Role; email: string; setEmail: (v: string) => void; direct: boolean; onBack: () => void; onFinish: () => void }) {
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -252,6 +308,10 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     e.preventDefault();
     setError(null);
     if (!agree) return;
+    if (direct && !/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
@@ -260,18 +320,22 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
       setError("Passwords do not match.");
       return;
     }
+    const metadata = {
+      role,
+      full_name: fullName,
+      university,
+      id_number: idNumber,
+      department,
+      semester,
+    };
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({
-      password,
-      data: {
-        role,
-        full_name: fullName,
-        university,
-        id_number: idNumber,
-        department,
-        semester,
-      },
-    });
+    const { error } = direct
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: metadata, emailRedirectTo: window.location.origin },
+        })
+      : await supabase.auth.updateUser({ password, data: metadata });
     setSubmitting(false);
     if (error) {
       setError(error.message);
@@ -279,6 +343,7 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
     }
     onFinish();
   };
+
 
   return (
     <div className="grid animate-rise-in gap-8 lg:grid-cols-[1fr_340px]">
@@ -294,7 +359,7 @@ function StepDetails({ role, email, onBack, onFinish }: { role: Role; email: str
 
         <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
           <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" value={fullName} onChange={setFullName} />
-          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" value={email} onChange={() => {}} type="email" readOnly />
+          <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" value={email} onChange={direct ? setEmail : () => {}} type="email" readOnly={!direct} />
           <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} value={university} onChange={setUniversity} />
           <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" value={idNumber} onChange={setIdNumber} />
           <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} value={department} onChange={setDepartment} />

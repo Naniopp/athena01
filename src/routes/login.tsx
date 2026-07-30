@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2, KeyRound } from "lucide-react";
 import heroCampus from "@/assets/hero-campus.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
+
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -79,15 +81,21 @@ function LoginPage() {
 
   async function handleGoogle() {
     setError(null);
-    const redirectTo = next
-      ? `${window.location.origin}${next}`
-      : `${window.location.origin}/dashboards`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
-    });
-    if (error) setError(error.message);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-in failed.");
+        return;
+      }
+      if (result.redirected) return;
+      goNext();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Google sign-in failed.");
+    }
   }
+
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
