@@ -234,16 +234,36 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
         })}
       </div>
 
-      <div className="mt-10 flex justify-center">
+      <div className="mx-auto mt-10 flex max-w-md flex-col items-stretch gap-3">
+        <button
+          disabled={!role}
+          onClick={onDirect}
+          className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Continue with email &amp; password
+          <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
+        </button>
+
+        <button
+          type="button"
+          disabled={!role}
+          onClick={onGoogle}
+          className="inline-flex items-center justify-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground transition enabled:hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <GoogleIcon /> Continue with Google
+        </button>
+
         <button
           disabled={!role}
           onClick={onContinue}
-          className="group inline-flex items-center gap-2 rounded-2xl bg-[#F97316] px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition enabled:hover:text-foreground disabled:opacity-40"
         >
-          Continue
-          <ArrowRight className="h-4 w-4 transition group-enabled:group-hover:translate-x-0.5" />
+          <KeyRound className="h-4 w-4 text-[#F97316]" /> Sign up with an email code instead
         </button>
+
+        {oauthError && <p className="text-center text-sm font-medium text-red-600">{oauthError}</p>}
       </div>
+
     </div>
   );
 }
