@@ -15,7 +15,9 @@ import { Btn, Skeleton, timeAgo } from "./ui";
 
 const R = "/dashboard/student";
 
-export const NAV = [
+type NavItem = { to: string; label: string; icon: typeof Home; exact?: boolean };
+
+export const NAV: NavItem[] = [
   { to: R, label: "Home", icon: Home, exact: true },
   { to: `${R}/ai`, label: "Athena AI", icon: Bot },
   { to: `${R}/courses`, label: "My Courses", icon: BookOpen },
@@ -31,7 +33,7 @@ export const NAV = [
   { to: `${R}/achievements`, label: "Achievements", icon: Trophy },
   { to: `${R}/profile`, label: "Profile", icon: User },
   { to: `${R}/settings`, label: "Settings", icon: SettingsIcon },
-] as const;
+];
 
 const MOBILE_NAV = [NAV[0], NAV[2], NAV[3], NAV[6], NAV[13]];
 
@@ -236,7 +238,7 @@ function SidebarLinks({ onNavigate, collapsed }: { onNavigate?: () => void; coll
         const active = item.exact ? pathname === item.to || pathname === `${item.to}/` : pathname.startsWith(item.to);
         return (
           <Link
-            key={item.to} to={item.to} onClick={onNavigate}
+            key={item.to} to={item.to as never} onClick={onNavigate}
             className={cn(
               "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all duration-200",
               active ? "bg-[var(--accent)]/10 font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -359,7 +361,7 @@ export function DashboardLayout() {
         {MOBILE_NAV.map((item) => {
           const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
           return (
-            <Link key={item.to} to={item.to} className={cn("flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] transition", active ? "text-[var(--accent)]" : "text-muted-foreground")}>
+            <Link key={item.to} to={item.to as never} className={cn("flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] transition", active ? "text-[var(--accent)]" : "text-muted-foreground")}>
               <item.icon className="h-5 w-5" />
               {item.label}
             </Link>
