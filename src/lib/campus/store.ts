@@ -395,18 +395,18 @@ export const useCampus = create<State & Actions>()(
     {
       name: "athena-campus-v1",
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ hydrated: _h, ...rest }) => rest as State,
-      onRehydrateStorage: () => (state) => {
-        state?.markHydrated?.();
-      },
+      partialize: ({ hydrated: _h, ...rest }) => rest as unknown as State,
     },
   ),
 );
 
-// zustand persist can't set a non-persisted flag directly; expose a helper.
-declare module "zustand" {}
-(useCampus as unknown as { getState: () => Record<string, unknown> }).getState();
-
 export function useHydrated() {
-  return useCampus.persist.hasHydrated();
+  const [hydrated, setHydrated] = useState(useCampus.persist.hasHydrated());
+  useEffect(() => {
+    const unsub = useCampus.persist.onFinishHydration(() => setHydrated(true));
+    if (useCampus.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  return hydrated;
 }
+
