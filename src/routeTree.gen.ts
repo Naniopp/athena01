@@ -18,6 +18,21 @@ import { Route as DashboardStudentRouteImport } from './routes/dashboard.student
 import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardStudentSettingsRouteImport } from './routes/dashboard.student.settings'
+import { Route as DashboardStudentResearchRouteImport } from './routes/dashboard.student.research'
+import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
+import { Route as DashboardStudentPlacementsRouteImport } from './routes/dashboard.student.placements'
+import { Route as DashboardStudentMessagesRouteImport } from './routes/dashboard.student.messages'
+import { Route as DashboardStudentLibraryRouteImport } from './routes/dashboard.student.library'
+import { Route as DashboardStudentEventsRouteImport } from './routes/dashboard.student.events'
+import { Route as DashboardStudentCoursesRouteImport } from './routes/dashboard.student.courses'
+import { Route as DashboardStudentClubsRouteImport } from './routes/dashboard.student.clubs'
+import { Route as DashboardStudentCalendarRouteImport } from './routes/dashboard.student.calendar'
+import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboard.student.attendance'
+import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
+import { Route as DashboardStudentAiRouteImport } from './routes/dashboard.student.ai'
+import { Route as DashboardStudentAchievementsRouteImport } from './routes/dashboard.student.achievements'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -68,6 +83,89 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentSettingsRoute =
+  DashboardStudentSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentResearchRoute =
+  DashboardStudentResearchRouteImport.update({
+    id: '/research',
+    path: '/research',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentProfileRoute = DashboardStudentProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentPlacementsRoute =
+  DashboardStudentPlacementsRouteImport.update({
+    id: '/placements',
+    path: '/placements',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentMessagesRoute =
+  DashboardStudentMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentLibraryRoute = DashboardStudentLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentEventsRoute = DashboardStudentEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentCoursesRoute = DashboardStudentCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentClubsRoute = DashboardStudentClubsRouteImport.update({
+  id: '/clubs',
+  path: '/clubs',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentCalendarRoute =
+  DashboardStudentCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentAttendanceRoute =
+  DashboardStudentAttendanceRouteImport.update({
+    id: '/attendance',
+    path: '/attendance',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentAssignmentsRoute =
+  DashboardStudentAssignmentsRouteImport.update({
+    id: '/assignments',
+    path: '/assignments',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const DashboardStudentAiRoute = DashboardStudentAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardStudentAchievementsRoute =
+  DashboardStudentAchievementsRouteImport.update({
+    id: '/achievements',
+    path: '/achievements',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -89,9 +187,24 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
+  '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
+  '/dashboard/student/clubs': typeof DashboardStudentClubsRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
+  '/dashboard/student/events': typeof DashboardStudentEventsRoute
+  '/dashboard/student/library': typeof DashboardStudentLibraryRoute
+  '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
+  '/dashboard/student/placements': typeof DashboardStudentPlacementsRoute
+  '/dashboard/student/profile': typeof DashboardStudentProfileRoute
+  '/dashboard/student/research': typeof DashboardStudentResearchRoute
+  '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,9 +215,23 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
+  '/dashboard/student/clubs': typeof DashboardStudentClubsRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
+  '/dashboard/student/events': typeof DashboardStudentEventsRoute
+  '/dashboard/student/library': typeof DashboardStudentLibraryRoute
+  '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
+  '/dashboard/student/placements': typeof DashboardStudentPlacementsRoute
+  '/dashboard/student/profile': typeof DashboardStudentProfileRoute
+  '/dashboard/student/research': typeof DashboardStudentResearchRoute
+  '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/student': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,9 +243,24 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
+  '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
+  '/dashboard/student/clubs': typeof DashboardStudentClubsRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
+  '/dashboard/student/events': typeof DashboardStudentEventsRoute
+  '/dashboard/student/library': typeof DashboardStudentLibraryRoute
+  '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
+  '/dashboard/student/placements': typeof DashboardStudentPlacementsRoute
+  '/dashboard/student/profile': typeof DashboardStudentProfileRoute
+  '/dashboard/student/research': typeof DashboardStudentResearchRoute
+  '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -134,6 +276,21 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/achievements'
+    | '/dashboard/student/ai'
+    | '/dashboard/student/assignments'
+    | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
+    | '/dashboard/student/clubs'
+    | '/dashboard/student/courses'
+    | '/dashboard/student/events'
+    | '/dashboard/student/library'
+    | '/dashboard/student/messages'
+    | '/dashboard/student/placements'
+    | '/dashboard/student/profile'
+    | '/dashboard/student/research'
+    | '/dashboard/student/settings'
+    | '/dashboard/student/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,9 +301,23 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
-    | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/achievements'
+    | '/dashboard/student/ai'
+    | '/dashboard/student/assignments'
+    | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
+    | '/dashboard/student/clubs'
+    | '/dashboard/student/courses'
+    | '/dashboard/student/events'
+    | '/dashboard/student/library'
+    | '/dashboard/student/messages'
+    | '/dashboard/student/placements'
+    | '/dashboard/student/profile'
+    | '/dashboard/student/research'
+    | '/dashboard/student/settings'
+    | '/dashboard/student'
   id:
     | '__root__'
     | '/'
@@ -160,6 +331,21 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/achievements'
+    | '/dashboard/student/ai'
+    | '/dashboard/student/assignments'
+    | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
+    | '/dashboard/student/clubs'
+    | '/dashboard/student/courses'
+    | '/dashboard/student/events'
+    | '/dashboard/student/library'
+    | '/dashboard/student/messages'
+    | '/dashboard/student/placements'
+    | '/dashboard/student/profile'
+    | '/dashboard/student/research'
+    | '/dashboard/student/settings'
+    | '/dashboard/student/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,7 +357,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DashboardRoleRoute: typeof DashboardRoleRoute
-  DashboardStudentRoute: typeof DashboardStudentRoute
+  DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -241,6 +427,111 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/student/': {
+      id: '/dashboard/student/'
+      path: '/'
+      fullPath: '/dashboard/student/'
+      preLoaderRoute: typeof DashboardStudentIndexRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/settings': {
+      id: '/dashboard/student/settings'
+      path: '/settings'
+      fullPath: '/dashboard/student/settings'
+      preLoaderRoute: typeof DashboardStudentSettingsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/research': {
+      id: '/dashboard/student/research'
+      path: '/research'
+      fullPath: '/dashboard/student/research'
+      preLoaderRoute: typeof DashboardStudentResearchRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/profile': {
+      id: '/dashboard/student/profile'
+      path: '/profile'
+      fullPath: '/dashboard/student/profile'
+      preLoaderRoute: typeof DashboardStudentProfileRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/placements': {
+      id: '/dashboard/student/placements'
+      path: '/placements'
+      fullPath: '/dashboard/student/placements'
+      preLoaderRoute: typeof DashboardStudentPlacementsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/messages': {
+      id: '/dashboard/student/messages'
+      path: '/messages'
+      fullPath: '/dashboard/student/messages'
+      preLoaderRoute: typeof DashboardStudentMessagesRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/library': {
+      id: '/dashboard/student/library'
+      path: '/library'
+      fullPath: '/dashboard/student/library'
+      preLoaderRoute: typeof DashboardStudentLibraryRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/events': {
+      id: '/dashboard/student/events'
+      path: '/events'
+      fullPath: '/dashboard/student/events'
+      preLoaderRoute: typeof DashboardStudentEventsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/courses': {
+      id: '/dashboard/student/courses'
+      path: '/courses'
+      fullPath: '/dashboard/student/courses'
+      preLoaderRoute: typeof DashboardStudentCoursesRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/clubs': {
+      id: '/dashboard/student/clubs'
+      path: '/clubs'
+      fullPath: '/dashboard/student/clubs'
+      preLoaderRoute: typeof DashboardStudentClubsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/calendar': {
+      id: '/dashboard/student/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/student/calendar'
+      preLoaderRoute: typeof DashboardStudentCalendarRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/attendance': {
+      id: '/dashboard/student/attendance'
+      path: '/attendance'
+      fullPath: '/dashboard/student/attendance'
+      preLoaderRoute: typeof DashboardStudentAttendanceRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/assignments': {
+      id: '/dashboard/student/assignments'
+      path: '/assignments'
+      fullPath: '/dashboard/student/assignments'
+      preLoaderRoute: typeof DashboardStudentAssignmentsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/ai': {
+      id: '/dashboard/student/ai'
+      path: '/ai'
+      fullPath: '/dashboard/student/ai'
+      preLoaderRoute: typeof DashboardStudentAiRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/student/achievements': {
+      id: '/dashboard/student/achievements'
+      path: '/achievements'
+      fullPath: '/dashboard/student/achievements'
+      preLoaderRoute: typeof DashboardStudentAchievementsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -258,6 +549,45 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardStudentRouteChildren {
+  DashboardStudentAchievementsRoute: typeof DashboardStudentAchievementsRoute
+  DashboardStudentAiRoute: typeof DashboardStudentAiRoute
+  DashboardStudentAssignmentsRoute: typeof DashboardStudentAssignmentsRoute
+  DashboardStudentAttendanceRoute: typeof DashboardStudentAttendanceRoute
+  DashboardStudentCalendarRoute: typeof DashboardStudentCalendarRoute
+  DashboardStudentClubsRoute: typeof DashboardStudentClubsRoute
+  DashboardStudentCoursesRoute: typeof DashboardStudentCoursesRoute
+  DashboardStudentEventsRoute: typeof DashboardStudentEventsRoute
+  DashboardStudentLibraryRoute: typeof DashboardStudentLibraryRoute
+  DashboardStudentMessagesRoute: typeof DashboardStudentMessagesRoute
+  DashboardStudentPlacementsRoute: typeof DashboardStudentPlacementsRoute
+  DashboardStudentProfileRoute: typeof DashboardStudentProfileRoute
+  DashboardStudentResearchRoute: typeof DashboardStudentResearchRoute
+  DashboardStudentSettingsRoute: typeof DashboardStudentSettingsRoute
+  DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
+}
+
+const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
+  DashboardStudentAchievementsRoute: DashboardStudentAchievementsRoute,
+  DashboardStudentAiRoute: DashboardStudentAiRoute,
+  DashboardStudentAssignmentsRoute: DashboardStudentAssignmentsRoute,
+  DashboardStudentAttendanceRoute: DashboardStudentAttendanceRoute,
+  DashboardStudentCalendarRoute: DashboardStudentCalendarRoute,
+  DashboardStudentClubsRoute: DashboardStudentClubsRoute,
+  DashboardStudentCoursesRoute: DashboardStudentCoursesRoute,
+  DashboardStudentEventsRoute: DashboardStudentEventsRoute,
+  DashboardStudentLibraryRoute: DashboardStudentLibraryRoute,
+  DashboardStudentMessagesRoute: DashboardStudentMessagesRoute,
+  DashboardStudentPlacementsRoute: DashboardStudentPlacementsRoute,
+  DashboardStudentProfileRoute: DashboardStudentProfileRoute,
+  DashboardStudentResearchRoute: DashboardStudentResearchRoute,
+  DashboardStudentSettingsRoute: DashboardStudentSettingsRoute,
+  DashboardStudentIndexRoute: DashboardStudentIndexRoute,
+}
+
+const DashboardStudentRouteWithChildren =
+  DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardsRoute: DashboardsRoute,
@@ -268,7 +598,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DashboardRoleRoute: DashboardRoleRoute,
-  DashboardStudentRoute: DashboardStudentRoute,
+  DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
