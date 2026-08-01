@@ -30,8 +30,6 @@ function pct(a: number, t: number) {
 
 function AttendancePage() {
   const loading = useLoading(500);
-  const notif = useCampus((s) => s.settings.notif);
-  const setSettings = useCampus((s) => s.setSettings);
   const pushNotification = useCampus((s) => s.pushNotification);
   const [notifyMe, setNotifyMe] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(seedAttendance[0].courseId);
@@ -59,7 +57,6 @@ function AttendancePage() {
 
   const handleNotifyToggle = (v: boolean) => {
     setNotifyMe(v);
-    setSettings({ notif: { ...notif, attendance: v } });
     if (v) {
       atRisk.forEach((c) => {
         pushNotification({

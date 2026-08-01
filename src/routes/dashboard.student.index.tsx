@@ -1,20 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
-  Home, Bot, BookOpen, ClipboardList, CheckCircle2, Calendar as CalendarIcon,
-  MessageSquare, Drama, PartyPopper, Library, Briefcase, FlaskConical, Trophy,
-  User, Settings, LogOut, Search, Plus, Bell, Moon, Sun, Image as ImageIcon,
-  BarChart3, Megaphone, Heart, MessageCircle, Share2, Bookmark, Menu, X,
-  Sparkles, ChevronRight, TrendingUp, Award, Zap, ArrowUpRight, MoreHorizontal,
+  Image as ImageIcon, BarChart3, Megaphone, Heart, MessageCircle, Share2, Bookmark,
+  MoreHorizontal, Sparkles, Send, Trash2, Pencil, Flag, Calendar as CalendarIcon,
+  ArrowUpRight, TrendingUp, Zap, CheckCircle2, X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCampus } from "@/lib/campus/store";
+import {
+  campusNews, seedAssignments, seedCalendar, seedEvents, type Post, type PostCategory, type PostKind,
+} from "@/lib/campus/seed";
+import { Badge, Btn, Card, Chip, Empty, Modal, Progress, Skeleton, timeAgo, useLoading } from "@/components/campus/ui";
+
+const R = "/dashboard/student";
+
+const CATEGORIES: (PostCategory | "All")[] = [
+  "All", "Announcements", "Academics", "Assignments", "Clubs", "Placements", "Research", "Events",
+];
 
 export const Route = createFileRoute("/dashboard/student/")({
-  component: StudentDashboard,
+  validateSearch: (s: Record<string, unknown>) => ({
+    q: typeof s.q === "string" ? s.q : "",
+    compose: typeof s.compose === "string" ? s.compose : "",
+  }),
+  component: FeedPage,
   head: () => ({
     meta: [
       { title: "Campus Feed · ATHENA" },
-      { name: "description", content: "Your live campus feed — announcements, assignments, clubs, placements, and AI insights, all in one premium student workspace." },
+      { name: "description", content: "Your live campus feed — announcements, assignments, clubs, placements and AI insights in one premium student workspace." },
       { property: "og:title", content: "Campus Feed · ATHENA" },
       { property: "og:description", content: "The digital heartbeat of your university." },
       { property: "og:type", content: "website" },
@@ -23,715 +37,567 @@ export const Route = createFileRoute("/dashboard/student/")({
   }),
 });
 
-/* ---------------- Data ---------------- */
+function FeedPage() {
+  const { q, compose } = Route.useSearch();
+  const loading = useLoading(450);
+  const posts = useCampus((s) => s.posts);
+  const profile = useCampus((s) => s.profile);
+  const [cat, setCat] = useState<PostCategory | "All">("All");
+  const [query, setQuery] = useState(q);
+  const [sort, setSort] = useState<"recent" | "top">("recent");
+  const [showCompose, setShowCompose] = useState(compose === "1");
 
-const NAV = [
-  { icon: Home, label: "Home", key: "home" },
-  { icon: Bot, label: "Athena AI", key: "ai" },
-  { icon: BookOpen, label: "My Courses", key: "courses" },
-  { icon: ClipboardList, label: "Assignments", key: "assignments" },
-  { icon: CheckCircle2, label: "Attendance", key: "attendance" },
-  { icon: CalendarIcon, label: "Calendar", key: "calendar" },
-  { icon: MessageSquare, label: "Messages", key: "messages" },
-  { icon: Drama, label: "Clubs", key: "clubs" },
-  { icon: PartyPopper, label: "Events", key: "events" },
-  { icon: Library, label: "Library", key: "library" },
-  { icon: Briefcase, label: "Placements", key: "placements" },
-  { icon: FlaskConical, label: "Research", key: "research" },
-  { icon: Trophy, label: "Achievements", key: "achievements" },
-  { icon: User, label: "Profile", key: "profile" },
-  { icon: Settings, label: "Settings", key: "settings" },
-];
+  const shown = useMemo(() => {
+    const t = query.trim().toLowerCase();
+    return posts
+      .filter((p) => (cat === "All" ? true : p.category === cat))
+      .filter((p) => (!t ? true : (p.body + p.author + p.category).toLowerCase().includes(t)))
+      .sort((a, b) => (sort === "recent" ? b.createdAt - a.createdAt : b.likes - a.likes));
+  }, [posts, cat, query, sort]);
 
-const CATEGORIES = ["All", "Announcements", "Academics", "Assignments", "Clubs", "Placements", "Research", "Events"] as const;
-type Category = (typeof CATEGORIES)[number];
-
-type Post = {
-  id: string;
-  author: string;
-  role: string;
-  roleColor?: string;
-  avatar: string;
-  time: string;
-  category: Exclude<Category, "All">;
-  content: string;
-  image?: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  liked?: boolean;
-  saved?: boolean;
-};
-
-const POSTS: Post[] = [
-  {
-    id: "1",
-    author: "Dr. Priya Menon",
-    role: "Faculty · CSE",
-    avatar: "PM",
-    time: "12m",
-    category: "Announcements",
-    content:
-      "Reminder — Machine Learning midterm has moved to Friday, 10:00 AM in LH-204. Syllabus locked at Chapter 7. Office hours extended this Wednesday for revisions. Bring your questions, not your caffeine crashes ☕",
-    likes: 214, comments: 38, shares: 12,
-  },
-  {
-    id: "2",
-    author: "Assignments · DBMS",
-    role: "Course Bot",
-    avatar: "DB",
-    time: "42m",
-    category: "Assignments",
-    content:
-      "New assignment posted: Normalization Case Study (3NF → BCNF). Due Aug 3, 11:59 PM. Auto-graded rubric attached. Late submissions accept up to 24h with 10% penalty.",
-    likes: 88, comments: 21, shares: 5,
-  },
-  {
-    id: "3",
-    author: "ACM Student Chapter",
-    role: "Club · Verified",
-    avatar: "AC",
-    time: "1h",
-    category: "Clubs",
-    content:
-      "🎉 CodeStorm 5.0 registrations are LIVE. 36-hour hackathon, ₹2L prize pool, mentors from Razorpay, Zerodha, and Postman. First 100 teams get free swag kits.",
-    image: "grid",
-    likes: 1240, comments: 187, shares: 96,
-  },
-  {
-    id: "4",
-    author: "Placement Cell",
-    role: "Official",
-    avatar: "PC",
-    time: "2h",
-    category: "Placements",
-    content:
-      "Stripe is on campus Sept 12 for SDE-1 (2026 batch). CGPA cutoff 7.5, no active backlogs. Applications close midnight Sunday. Preparation kit and past interview transcripts pinned in resources.",
-    likes: 902, comments: 143, shares: 210,
-  },
-  {
-    id: "5",
-    author: "Aditi Rao",
-    role: "Student · Final Year",
-    avatar: "AR",
-    time: "3h",
-    category: "Research",
-    content:
-      "Our paper on Federated Learning for edge devices got accepted at NeurIPS Workshop 🎓 Huge thanks to Prof. Iyer and the lab. AMA below — happy to share the submission playbook.",
-    likes: 1876, comments: 244, shares: 128,
-  },
-  {
-    id: "6",
-    author: "Sports Council",
-    role: "Announcement",
-    avatar: "SC",
-    time: "5h",
-    category: "Events",
-    content:
-      "Inter-department football finals — Saturday, 5 PM at Ground A. CSE vs ECE. Free entry, cheer squads welcome. Live commentary on ATHENA Radio.",
-    likes: 431, comments: 62, shares: 24,
-  },
-  {
-    id: "7",
-    author: "Campus Library",
-    role: "Notice",
-    avatar: "CL",
-    time: "8h",
-    category: "Announcements",
-    content:
-      "Extended hours during midterms — Central Library open 24×7 from Aug 1–10. Silent Zone bookings live on ATHENA. Coffee counter reopens tomorrow ☕",
-    likes: 156, comments: 12, shares: 8,
-  },
-  {
-    id: "8",
-    author: "Rohan Shetty",
-    role: "Student · Achiever",
-    avatar: "RS",
-    time: "11h",
-    category: "Academics",
-    content:
-      "Won 2nd place at IIT-B's national quiz meet last weekend 🏆 Grateful to the college for the travel grant. Notes and prep sheet dropping in the Achievers channel tonight.",
-    likes: 2103, comments: 312, shares: 88,
-  },
-];
-
-const CLASSES = [
-  { time: "9:00", title: "Machine Learning", room: "LH-204", accent: true },
-  { time: "11:00", title: "Database Systems", room: "LH-118" },
-  { time: "2:00", title: "Software Engineering Lab", room: "Lab-3" },
-];
-
-const NOTIFS = [
-  { icon: ClipboardList, title: "Assignment uploaded", meta: "DBMS · Normalization", time: "12m" },
-  { icon: CheckCircle2, title: "Attendance updated", meta: "ML — 82%", time: "1h" },
-  { icon: CalendarIcon, title: "Exam schedule released", meta: "Midterms Aug 5", time: "3h" },
-  { icon: Drama, title: "Club invitation", meta: "Robotics Society", time: "6h" },
-  { icon: Briefcase, title: "Placement drive", meta: "Stripe · SDE-1", time: "1d" },
-];
-
-const AI_SUGGESTIONS = [
-  { icon: ClipboardList, text: "Assignment due tomorrow — DBMS Normalization" },
-  { icon: TrendingUp, text: "Attendance in ML is trending below 75%" },
-  { icon: Sparkles, text: "AI Workshop on Aug 2 matches your interests" },
-  { icon: Briefcase, text: "4 placement applications open this week" },
-];
-
-const QUICK = [
-  { icon: ClipboardList, label: "Submit Assignment" },
-  { icon: Library, label: "Book Library" },
-  { icon: PartyPopper, label: "Join Event" },
-  { icon: CheckCircle2, label: "View Attendance" },
-  { icon: Bot, label: "Ask Athena" },
-];
-
-const UPCOMING = [
-  { name: "CodeStorm Hackathon", date: "Aug 2 · 9AM", tag: "Hackathon" },
-  { name: "Generative AI Workshop", date: "Aug 4 · 3PM", tag: "Workshop" },
-  { name: "Sports Fest — Opening", date: "Aug 6 · 5PM", tag: "Sports" },
-  { name: "LeetCode Contest", date: "Aug 8 · 8PM", tag: "Coding" },
-  { name: "Research Symposium", date: "Aug 10 · 10AM", tag: "Research" },
-];
-
-/* ---------------- Small UI atoms ---------------- */
-
-function Avatar({ text, size = 40, accent = false }: { text: string; size?: number; accent?: boolean }) {
   return (
-    <div
-      className={cn(
-        "rounded-full grid place-items-center font-semibold shrink-0 select-none",
-        accent ? "bg-[#F97316] text-white" : "bg-[#111111] text-white",
-      )}
-      style={{ width: size, height: size, fontSize: size * 0.36 }}
-    >
-      {text}
+    <div className="mx-auto grid max-w-[1400px] gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="min-w-0 space-y-5">
+        <Composer open={showCompose} setOpen={setShowCompose} />
+
+        <div className="flex flex-wrap items-center gap-2">
+          {CATEGORIES.map((c) => (
+            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>{c}</Chip>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the feed..."
+            className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/70 focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
+          />
+          <div className="flex gap-2">
+            <Chip active={sort === "recent"} onClick={() => setSort("recent")}>Recent</Chip>
+            <Chip active={sort === "top"} onClick={() => setSort("top")}>Top</Chip>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
+        ) : shown.length === 0 ? (
+          <Empty title="Nothing here yet" hint="Try another category, or post the first update for your campus." />
+        ) : (
+          <div className="space-y-4">
+            {shown.map((p) => <PostCard key={p.id} post={p} me={profile.name} />)}
+          </div>
+        )}
+      </div>
+
+      <aside className="hidden space-y-5 xl:block">
+        <div className="sticky top-[84px] space-y-5">
+          <AiWidget />
+          <TodayWidget />
+          <DeadlinesWidget />
+          <EventsWidget />
+          <NewsWidget />
+        </div>
+      </aside>
     </div>
   );
 }
 
-function IconBtn({ children, onClick, active }: { children: React.ReactNode; onClick?: () => void; active?: boolean }) {
+/* --------------------------------- Composer -------------------------------- */
+
+function Composer({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
+  const profile = useCampus((s) => s.profile);
+  const addPost = useCampus((s) => s.addPost);
+  const [body, setBody] = useState("");
+  const [category, setCategory] = useState<PostCategory>("Academics");
+  const [kind, setKind] = useState<PostKind>("text");
+  const [image, setImage] = useState<string | undefined>();
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const reset = () => {
+    setBody(""); setKind("text"); setImage(undefined); setPollOptions(["", ""]); setError(null); setOpen(false);
+  };
+
+  const submit = () => {
+    if (body.trim().length < 3) { setError("Write at least a few words."); return; }
+    if (kind === "poll" && pollOptions.filter((o) => o.trim()).length < 2) {
+      setError("A poll needs at least two options."); return;
+    }
+    addPost({
+      body: body.trim(),
+      category,
+      kind,
+      image,
+      pollOptions: kind === "poll" ? pollOptions.map((o) => o.trim()).filter(Boolean) : undefined,
+    });
+    toast.success("Posted to the campus feed");
+    reset();
+  };
+
+  const onFile = (f?: File | null) => {
+    if (!f) return;
+    if (f.size > 4_000_000) { toast.error("Image must be under 4 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => { setImage(String(reader.result)); setKind("image"); };
+    reader.readAsDataURL(f);
+  };
+
+  return (
+    <Card className="p-4 sm:p-5">
+      <div className="flex items-start gap-3">
+        <img src={profile.photo} alt="" className="h-10 w-10 rounded-full object-cover" />
+        {!open ? (
+          <button
+            onClick={() => setOpen(true)}
+            className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-left text-sm text-muted-foreground transition hover:border-foreground/20"
+          >
+            Share something with your campus, {profile.name.split(" ")[0]}...
+          </button>
+        ) : (
+          <div className="min-w-0 flex-1 space-y-3">
+            <textarea
+              autoFocus
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={3}
+              maxLength={600}
+              placeholder="What's happening on campus?"
+              className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
+            />
+
+            {image && (
+              <div className="relative overflow-hidden rounded-2xl border border-border">
+                <img src={image} alt="Attached preview" className="max-h-72 w-full object-cover" />
+                <button
+                  onClick={() => { setImage(undefined); setKind("text"); }}
+                  className="absolute right-2 top-2 rounded-full bg-foreground/70 p-1.5 text-background"
+                  aria-label="Remove image"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {kind === "poll" && (
+              <div className="space-y-2">
+                {pollOptions.map((o, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      value={o}
+                      onChange={(e) => setPollOptions((p) => p.map((x, j) => (j === i ? e.target.value : x)))}
+                      placeholder={`Option ${i + 1}`}
+                      className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                    />
+                    {pollOptions.length > 2 && (
+                      <button onClick={() => setPollOptions((p) => p.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive" aria-label="Remove option">
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {pollOptions.length < 5 && (
+                  <Btn variant="ghost" size="sm" onClick={() => setPollOptions((p) => [...p, ""])}>+ Add option</Btn>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+              <Btn variant="outline" size="sm" onClick={() => fileRef.current?.click()}><ImageIcon className="h-3.5 w-3.5" /> Photo</Btn>
+              <Btn variant={kind === "poll" ? "primary" : "outline"} size="sm" onClick={() => setKind(kind === "poll" ? "text" : "poll")}><BarChart3 className="h-3.5 w-3.5" /> Poll</Btn>
+              <Btn variant={kind === "announcement" ? "primary" : "outline"} size="sm" onClick={() => setKind(kind === "announcement" ? "text" : "announcement")}><Megaphone className="h-3.5 w-3.5" /> Announcement</Btn>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as PostCategory)}
+                className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground outline-none"
+              >
+                {CATEGORIES.filter((c) => c !== "All").map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <div className="ml-auto flex items-center gap-2">
+                <Btn variant="ghost" size="sm" onClick={reset}>Cancel</Btn>
+                <Btn variant="accent" size="sm" onClick={submit}><Send className="h-3.5 w-3.5" /> Post</Btn>
+              </div>
+            </div>
+
+            {error && <p className="text-xs text-destructive">{error}</p>}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+/* --------------------------------- PostCard -------------------------------- */
+
+function PostCard({ post, me }: { post: Post; me: string }) {
+  const liked = useCampus((s) => s.likedPosts.includes(post.id));
+  const saved = useCampus((s) => s.bookmarkedPosts.includes(post.id));
+  const { toggleLike, toggleBookmark, sharePost, reportPost, deletePost, editPost, addComment, votePoll } = useCampus.getState();
+  const [openComments, setOpenComments] = useState(false);
+  const [comment, setComment] = useState("");
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [menu, setMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.body);
+  const [burst, setBurst] = useState(false);
+
+  const totalVotes = post.poll?.options.reduce((a, o) => a + o.votes, 0) ?? 0;
+  const commentCount = countComments(post.comments);
+
+  const like = () => {
+    toggleLike(post.id);
+    if (!liked) { setBurst(true); setTimeout(() => setBurst(false), 420); }
+  };
+
+  return (
+    <Card hover className="overflow-hidden p-0">
+      <div className="flex items-start gap-3 p-5 pb-3">
+        <img src={post.avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">{post.author}</p>
+            {post.kind === "announcement" && <Badge tone="accent">Announcement</Badge>}
+            {post.own && <Badge tone="muted">You</Badge>}
+          </div>
+          <p className="text-xs text-muted-foreground">{post.authorRole} · {timeAgo(post.createdAt)} · {post.category}</p>
+        </div>
+        <div className="relative">
+          <button onClick={() => setMenu((m) => !m)} aria-label="Post options" className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          {menu && (
+            <div className="absolute right-0 top-9 z-30 w-44 overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-[0_20px_50px_-30px_rgba(17,17,17,0.6)]">
+              {post.own || post.author === me ? (
+                <>
+                  <MenuItem icon={<Pencil className="h-3.5 w-3.5" />} label="Edit post" onClick={() => { setEditing(true); setMenu(false); }} />
+                  <MenuItem icon={<Trash2 className="h-3.5 w-3.5" />} label="Delete post" danger onClick={() => { deletePost(post.id); toast.success("Post deleted"); }} />
+                </>
+              ) : (
+                <MenuItem icon={<Flag className="h-3.5 w-3.5" />} label={post.reported ? "Reported" : "Report post"} onClick={() => { reportPost(post.id); setMenu(false); toast.success("Thanks — reported to moderators"); }} />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="px-5 pb-3">
+        {editing ? (
+          <div className="space-y-2">
+            <textarea
+              value={draft} onChange={(e) => setDraft(e.target.value)} rows={3}
+              className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-[var(--accent)]"
+            />
+            <div className="flex gap-2">
+              <Btn size="sm" variant="accent" onClick={() => { editPost(post.id, draft.trim() || post.body); setEditing(false); toast.success("Post updated"); }}>Save</Btn>
+              <Btn size="sm" variant="ghost" onClick={() => { setDraft(post.body); setEditing(false); }}>Cancel</Btn>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{post.body}</p>
+        )}
+
+        {post.eventMeta && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-background p-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)]/12 text-[var(--accent)]">
+              <CalendarIcon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">{post.eventMeta.title}</p>
+              <p className="text-xs text-muted-foreground">{post.eventMeta.date} · {post.eventMeta.venue}</p>
+            </div>
+            <Link to={`${R}/events`} className="ml-auto text-xs font-medium text-[var(--accent)] hover:underline">View event</Link>
+          </div>
+        )}
+      </div>
+
+      {post.image && (
+        <img src={post.image} alt="" className="max-h-[440px] w-full object-cover" />
+      )}
+
+      {post.poll && (
+        <div className="space-y-2 px-5 py-4">
+          {post.poll.options.map((o) => {
+            const pct = totalVotes ? Math.round((o.votes / totalVotes) * 100) : 0;
+            const votedThis = post.poll?.votedId === o.id;
+            return (
+              <button
+                key={o.id}
+                disabled={!!post.poll?.votedId}
+                onClick={() => { votePoll(post.id, o.id); toast.success("Vote recorded"); }}
+                className={cn(
+                  "w-full rounded-2xl border px-4 py-2.5 text-left transition",
+                  votedThis ? "border-[var(--accent)] bg-[var(--accent)]/8" : "border-border hover:border-foreground/20",
+                )}
+              >
+                <div className="flex items-center justify-between text-sm text-foreground">
+                  <span className="flex items-center gap-2">
+                    {votedThis && <CheckCircle2 className="h-3.5 w-3.5 text-[var(--accent)]" />}
+                    {o.label}
+                  </span>
+                  {post.poll?.votedId && <span className="text-xs text-muted-foreground">{pct}%</span>}
+                </div>
+                {post.poll?.votedId && <div className="mt-2"><Progress value={pct} /></div>}
+              </button>
+            );
+          })}
+          <p className="text-xs text-muted-foreground">{totalVotes} vote{totalVotes === 1 ? "" : "s"}</p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-1 border-t border-border px-3 py-2">
+        <Action onClick={like} active={liked} icon={<Heart className={cn("h-4 w-4 transition-transform", liked && "fill-current", burst && "scale-125")} />} label={String(post.likes)} />
+        <Action onClick={() => setOpenComments((o) => !o)} icon={<MessageCircle className="h-4 w-4" />} label={String(commentCount)} />
+        <Action onClick={() => { sharePost(post.id); navigator.clipboard?.writeText(`${typeof window !== "undefined" ? window.location.origin : ""}${R}`); toast.success("Link copied to clipboard"); }} icon={<Share2 className="h-4 w-4" />} label={String(post.shares)} />
+        <Action
+          className="ml-auto"
+          onClick={() => { toggleBookmark(post.id); toast.success(saved ? "Removed from saved" : "Saved for later"); }}
+          active={saved}
+          icon={<Bookmark className={cn("h-4 w-4", saved && "fill-current")} />}
+          label={saved ? "Saved" : "Save"}
+        />
+      </div>
+
+      {openComments && (
+        <div className="space-y-3 border-t border-border bg-background/60 p-5">
+          {post.comments.length === 0 && <p className="text-xs text-muted-foreground">No comments yet — start the conversation.</p>}
+          {post.comments.map((c) => (
+            <CommentNode key={c.id} c={c} depth={0} onReply={(id) => setReplyTo(id)} activeReply={replyTo} onSubmitReply={(id, body) => { addComment(post.id, body, id); setReplyTo(null); }} />
+          ))}
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && comment.trim()) { addComment(post.id, comment.trim()); setComment(""); }
+              }}
+              placeholder="Write a comment..."
+              className="flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm outline-none focus:border-[var(--accent)]"
+            />
+            <Btn size="sm" variant="accent" disabled={!comment.trim()} onClick={() => { addComment(post.id, comment.trim()); setComment(""); }}>
+              <Send className="h-3.5 w-3.5" />
+            </Btn>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function countComments(list: { replies: unknown[] }[]): number {
+  return list.reduce((a, c) => a + 1 + countComments(c.replies as { replies: unknown[] }[]), 0);
+}
+
+function CommentNode({
+  c, depth, onReply, activeReply, onSubmitReply,
+}: {
+  c: { id: string; author: string; avatar: string; body: string; createdAt: number; replies: never[] | any[] };
+  depth: number;
+  onReply: (id: string) => void;
+  activeReply: string | null;
+  onSubmitReply: (id: string, body: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  return (
+    <div style={{ marginLeft: depth * 20 }} className="space-y-2">
+      <div className="flex items-start gap-2.5">
+        <img src={c.avatar} alt="" className="h-7 w-7 rounded-full object-cover" />
+        <div className="min-w-0 flex-1 rounded-2xl bg-card px-3.5 py-2">
+          <p className="text-xs font-semibold text-foreground">{c.author} <span className="font-normal text-muted-foreground">· {timeAgo(c.createdAt)}</span></p>
+          <p className="mt-0.5 text-sm text-foreground">{c.body}</p>
+          <button onClick={() => onReply(c.id)} className="mt-1 text-[11px] font-medium text-muted-foreground hover:text-[var(--accent)]">Reply</button>
+        </div>
+      </div>
+      {activeReply === c.id && (
+        <div className="ml-9 flex items-center gap-2">
+          <input
+            autoFocus value={draft} onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && draft.trim()) { onSubmitReply(c.id, draft.trim()); setDraft(""); } }}
+            placeholder={`Reply to ${c.author}...`}
+            className="flex-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm outline-none focus:border-[var(--accent)]"
+          />
+          <Btn size="sm" variant="accent" disabled={!draft.trim()} onClick={() => { onSubmitReply(c.id, draft.trim()); setDraft(""); }}>Send</Btn>
+        </div>
+      )}
+      {c.replies.map((r: any) => (
+        <CommentNode key={r.id} c={r} depth={depth + 1} onReply={onReply} activeReply={activeReply} onSubmitReply={onSubmitReply} />
+      ))}
+    </div>
+  );
+}
+
+function MenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "h-10 w-10 grid place-items-center rounded-full transition-all",
-        "hover:bg-[#FFF7ED] hover:text-[#F97316] active:scale-95",
-        active && "bg-[#FFF7ED] text-[#F97316]",
-      )}
+      className={cn("flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-muted", danger ? "text-destructive" : "text-foreground")}
     >
-      {children}
+      {icon} {label}
     </button>
   );
 }
 
-/* ---------------- Sidebar ---------------- */
-
-function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [active, setActive] = useState("home");
+function Action({ icon, label, onClick, active, className }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean; className?: string }) {
   return (
-    <>
-      {/* Mobile overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden transition-opacity",
-          open ? "opacity-100" : "opacity-0 pointer-events-none",
-        )}
-        onClick={onClose}
-      />
-      <aside
-        className={cn(
-          "fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-[260px] bg-white border-r border-[#E5E7EB]",
-          "flex flex-col transition-transform duration-300",
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-        )}
-      >
-        <div className="h-16 px-6 flex items-center justify-between border-b border-[#E5E7EB]">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-[#111111] grid place-items-center">
-              <div className="h-3 w-3 rounded-sm bg-[#F97316]" />
-            </div>
-            <span className="font-bold tracking-tight text-[#111111]">ATHENA</span>
-          </Link>
-          <button className="lg:hidden text-[#6B7280]" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-          {NAV.map((n) => {
-            const isActive = active === n.key;
-            const Icon = n.icon;
-            return (
-              <button
-                key={n.key}
-                onClick={() => setActive(n.key)}
-                className={cn(
-                  "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
-                  isActive
-                    ? "bg-[#FFF7ED] text-[#F97316]"
-                    : "text-[#111111] hover:bg-[#F8F8F8]",
-                )}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[#F97316]" />
-                )}
-                <Icon className="h-[18px] w-[18px] shrink-0" />
-                <span className="truncate">{n.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="p-3 border-t border-[#E5E7EB]">
-          <Link
-            to="/login"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] hover:bg-[#F8F8F8] hover:text-[#111111]"
-          >
-            <LogOut className="h-[18px] w-[18px]" />
-            Logout
-          </Link>
-        </div>
-      </aside>
-    </>
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition active:scale-95",
+        active ? "text-[var(--accent)]" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        className,
+      )}
+    >
+      {icon} {label}
+    </button>
   );
 }
 
-/* ---------------- Top bar ---------------- */
+/* --------------------------------- Widgets --------------------------------- */
 
-function TopBar({ onMenu, dark, setDark }: { onMenu: () => void; dark: boolean; setDark: (v: boolean) => void }) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-[#E5E7EB]">
-      <div className="h-16 px-4 lg:px-8 flex items-center gap-4">
-        <button className="lg:hidden text-[#111111]" onClick={onMenu}>
-          <Menu className="h-5 w-5" />
-        </button>
+function AiWidget() {
+  const [q, setQ] = useState("");
+  const newChat = useCampus((s) => s.newChat);
+  const sendAi = useCampus((s) => s.sendAi);
+  const nav = Route.useNavigate();
 
-        <div className={cn(
-          "flex items-center gap-2 rounded-full bg-[#F8F8F8] border border-transparent px-4 h-10 transition-all",
-          focused ? "w-full max-w-md border-[#F97316]/40 bg-white shadow-sm" : "w-full max-w-xs",
-        )}>
-          <Search className="h-4 w-4 text-[#6B7280]" />
-          <input
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="Search anything..."
-            className="bg-transparent outline-none text-sm w-full placeholder:text-[#6B7280]"
-          />
-        </div>
-
-        <h1 className="hidden md:block flex-1 text-center font-semibold text-[#111111] tracking-tight">
-          Campus Feed
-        </h1>
-
-        <div className="flex items-center gap-1 ml-auto md:ml-0">
-          <button className="hidden sm:flex items-center gap-1.5 h-10 px-4 rounded-full bg-[#111111] text-white text-sm font-medium hover:bg-[#F97316] transition-colors">
-            <Plus className="h-4 w-4" /> Create
-          </button>
-          <IconBtn><MessageSquare className="h-[18px] w-[18px]" /></IconBtn>
-          <div className="relative">
-            <IconBtn><Bell className="h-[18px] w-[18px]" /></IconBtn>
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#F97316] ring-2 ring-white" />
-          </div>
-          <IconBtn onClick={() => setDark(!dark)}>
-            {dark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
-          </IconBtn>
-          <button className="ml-1"><Avatar text="AJ" size={36} /></button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-/* ---------------- Composer ---------------- */
-
-function Composer() {
-  return (
-    <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(17,17,17,0.04)] p-5">
-      <div className="flex items-center gap-3">
-        <Avatar text="AJ" size={44} />
-        <input
-          placeholder="Share something with your campus..."
-          className="flex-1 h-11 px-4 rounded-full bg-[#F8F8F8] text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#F97316]/30 transition-all placeholder:text-[#6B7280]"
-        />
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-1.5">
-        {[
-          { icon: ImageIcon, label: "Photo" },
-          { icon: BarChart3, label: "Poll" },
-          { icon: CalendarIcon, label: "Event" },
-          { icon: Megaphone, label: "Announcement" },
-        ].map((b) => (
-          <button
-            key={b.label}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-full text-sm text-[#6B7280] hover:bg-[#FFF7ED] hover:text-[#F97316] transition-colors"
-          >
-            <b.icon className="h-4 w-4" /> {b.label}
-          </button>
-        ))}
-        <button className="ml-auto h-9 px-4 rounded-full bg-[#F97316] text-white text-sm font-medium hover:brightness-95 active:scale-[0.98] transition">
-          Create Post
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Post Card ---------------- */
-
-function PostImagePlaceholder() {
-  return (
-    <div className="mt-4 h-56 rounded-2xl overflow-hidden relative bg-gradient-to-br from-[#111111] to-[#333]">
-      <div className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 20%, rgba(249,115,22,0.5), transparent 40%), radial-gradient(circle at 80% 60%, rgba(249,115,22,0.35), transparent 45%)",
-        }}
-      />
-      <div className="absolute inset-0 grid-bg-dark opacity-30" />
-      <div className="absolute inset-0 flex flex-col justify-end p-5 text-white">
-        <div className="text-xs uppercase tracking-widest text-[#F97316] font-semibold">CodeStorm 5.0</div>
-        <div className="text-2xl font-bold mt-1">36 Hours. Infinite Ideas.</div>
-      </div>
-    </div>
-  );
-}
-
-function PostCard({ post, index }: { post: Post; index: number }) {
-  const [liked, setLiked] = useState(!!post.liked);
-  const [saved, setSaved] = useState(!!post.saved);
-  const [likes, setLikes] = useState(post.likes);
-  const [beat, setBeat] = useState(false);
-
-  const toggleLike = () => {
-    setLiked((v) => {
-      const nv = !v;
-      setLikes((n) => n + (nv ? 1 : -1));
-      if (nv) { setBeat(true); setTimeout(() => setBeat(false), 400); }
-      return nv;
-    });
+  const ask = (text: string) => {
+    if (!text.trim()) return;
+    const id = newChat();
+    sendAi(id, text.trim());
+    nav({ to: `${R}/ai` as never });
   };
 
   return (
-    <article
-      className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_1px_2px_rgba(17,17,17,0.04)] hover:shadow-[0_8px_30px_rgba(17,17,17,0.06)] transition-shadow p-5 animate-rise-in"
-      style={{ animationDelay: `${index * 40}ms` }}
-    >
-      <header className="flex items-center gap-3">
-        <Avatar text={post.avatar} accent={post.role.toLowerCase().includes("club") || post.role.toLowerCase().includes("bot")} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-[#111111] truncate">{post.author}</span>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#F97316]">
-              {post.role}
-            </span>
-          </div>
-          <div className="text-xs text-[#6B7280] mt-0.5">{post.time} ago · {post.category}</div>
+    <Card className="bg-foreground text-background">
+      <div className="flex items-center gap-2">
+        <div className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--accent)] text-white">
+          <Sparkles className="h-4 w-4" />
         </div>
-        <button className="text-[#6B7280] hover:text-[#111111]">
-          <MoreHorizontal className="h-5 w-5" />
+        <p className="text-sm font-semibold">Athena AI</p>
+      </div>
+      <p className="mt-2 text-xs text-background/70">Ask about deadlines, attendance, placements or events.</p>
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          value={q} onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && ask(q)}
+          placeholder="Ask anything..."
+          className="min-w-0 flex-1 rounded-full bg-background/10 px-3.5 py-2 text-xs text-background outline-none placeholder:text-background/50"
+        />
+        <button onClick={() => ask(q)} aria-label="Ask Athena" className="rounded-full bg-[var(--accent)] p-2 text-white">
+          <Send className="h-3.5 w-3.5" />
         </button>
-      </header>
-
-      <p className="mt-4 text-[15px] leading-relaxed text-[#111111]">{post.content}</p>
-
-      {post.image && <PostImagePlaceholder />}
-
-      <footer className="mt-4 pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-sm text-[#6B7280]">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={toggleLike}
-            className={cn(
-              "flex items-center gap-1.5 h-9 px-3 rounded-full transition-colors",
-              liked ? "text-[#F97316] bg-[#FFF7ED]" : "hover:bg-[#F8F8F8]",
-            )}
-          >
-            <Heart className={cn("h-[18px] w-[18px] transition-transform", liked && "fill-[#F97316]", beat && "scale-125")} />
-            <span className="tabular-nums">{likes.toLocaleString()}</span>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {["My attendance", "Due this week", "Placement matches"].map((s) => (
+          <button key={s} onClick={() => ask(s)} className="rounded-full border border-background/20 px-2.5 py-1 text-[11px] text-background/80 hover:bg-background/10">
+            {s}
           </button>
-          <button className="flex items-center gap-1.5 h-9 px-3 rounded-full hover:bg-[#F8F8F8]">
-            <MessageCircle className="h-[18px] w-[18px]" />
-            <span>{post.comments}</span>
-          </button>
-          <button className="flex items-center gap-1.5 h-9 px-3 rounded-full hover:bg-[#F8F8F8]">
-            <Share2 className="h-[18px] w-[18px]" />
-            <span className="hidden sm:inline">{post.shares}</span>
-          </button>
-        </div>
-        <button
-          onClick={() => setSaved((v) => !v)}
-          className={cn(
-            "h-9 w-9 grid place-items-center rounded-full transition-all active:scale-90",
-            saved ? "text-[#F97316] bg-[#FFF7ED]" : "hover:bg-[#F8F8F8]",
-          )}
-        >
-          <Bookmark className={cn("h-[18px] w-[18px]", saved && "fill-[#F97316]")} />
-        </button>
-      </footer>
-    </article>
+        ))}
+      </div>
+    </Card>
   );
 }
 
-/* ---------------- Right rail widgets ---------------- */
-
-function Widget({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+function TodayWidget() {
+  const today = new Date().toISOString().slice(0, 10);
+  const items = seedCalendar.filter((c) => c.date === today);
   return (
-    <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-5 shadow-[0_1px_2px_rgba(17,17,17,0.04)]">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-[#111111]">{title}</h3>
-        {action && <button className="text-xs font-medium text-[#F97316] hover:underline">{action}</button>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function ProfileCard() {
-  return (
-    <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-5 shadow-[0_1px_2px_rgba(17,17,17,0.04)] overflow-hidden relative">
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-br from-[#111111] to-[#2a2a2a]" />
-      <div className="relative flex items-end gap-3">
-        <div className="h-16 w-16 rounded-full bg-white p-1 shadow-md">
-          <Avatar text="AJ" size={56} accent />
-        </div>
-        <div className="pb-1">
-          <div className="font-semibold text-[#111111]">Alex Johnson</div>
-          <div className="text-xs text-[#6B7280]">Computer Science · Sem 5</div>
-        </div>
-      </div>
-      <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-        {[
-          { label: "CGPA", value: "9.1" },
-          { label: "Attend.", value: "88%" },
-          { label: "Badges", value: "12" },
-        ].map((s) => (
-          <div key={s.label} className="bg-[#F8F8F8] rounded-xl py-2.5">
-            <div className="text-base font-bold text-[#111111]">{s.value}</div>
-            <div className="text-[10px] uppercase tracking-wide text-[#6B7280] mt-0.5">{s.label}</div>
+    <Card>
+      <WidgetHead title="Today's classes" to={`${R}/calendar`} />
+      <div className="mt-3 space-y-2.5">
+        {items.length === 0 && <p className="text-xs text-muted-foreground">No classes scheduled today.</p>}
+        {items.map((c) => (
+          <div key={c.id} className="flex items-center gap-3">
+            <span className="w-12 shrink-0 text-xs font-medium text-[var(--accent)]">{c.time}</span>
+            <span className="min-w-0 flex-1 truncate text-sm text-foreground">{c.title}</span>
+            <Badge tone={c.type === "exam" ? "danger" : "muted"}>{c.type}</Badge>
           </div>
         ))}
       </div>
-      <button className="mt-4 w-full h-10 rounded-full border border-[#E5E7EB] text-sm font-medium text-[#111111] hover:bg-[#F8F8F8] transition">
-        View Profile
-      </button>
-    </div>
+    </Card>
   );
 }
 
-function AthenaAICard() {
+function DeadlinesWidget() {
+  const submissions = useCampus((s) => s.submissions);
+  const pending = seedAssignments
+    .filter((a) => !submissions[a.id] && a.status === "pending")
+    .sort((a, b) => a.due - b.due)
+    .slice(0, 3);
   return (
-    <div className="rounded-[20px] p-5 relative overflow-hidden bg-[#111111] text-white shadow-[0_10px_30px_rgba(17,17,17,0.15)]">
-      <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#F97316]/30 blur-3xl animate-pulse-glow" />
-      <div className="relative">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#F97316] font-semibold">
-          <Sparkles className="h-3.5 w-3.5" /> Athena AI
-        </div>
-        <div className="mt-2 text-lg font-semibold">Good Morning, Alex 👋</div>
-        <p className="text-sm text-white/70 mt-1">Here's what needs your attention today.</p>
-
-        <div className="mt-4 space-y-2">
-          {AI_SUGGESTIONS.map((s, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-sm bg-white/5 hover:bg-white/10 transition-colors rounded-xl px-3 py-2.5">
-              <s.icon className="h-4 w-4 text-[#F97316] mt-0.5 shrink-0" />
-              <span className="text-white/90">{s.text}</span>
+    <Card>
+      <WidgetHead title="Upcoming deadlines" to={`${R}/assignments`} />
+      <div className="mt-3 space-y-3">
+        {pending.length === 0 && <p className="text-xs text-muted-foreground">You're all caught up.</p>}
+        {pending.map((a) => {
+          const days = Math.max(0, Math.ceil((a.due - Date.now()) / 86400000));
+          return (
+            <div key={a.id}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="min-w-0 truncate text-sm text-foreground">{a.title}</p>
+                <span className={cn("shrink-0 text-xs font-medium", days <= 2 ? "text-destructive" : "text-muted-foreground")}>{days}d</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{a.courseCode} · {a.points} pts</p>
             </div>
-          ))}
-        </div>
-
-        <button className="mt-4 w-full h-10 rounded-full bg-[#F97316] text-white text-sm font-semibold hover:brightness-95 active:scale-[0.98] transition flex items-center justify-center gap-1.5">
-          Open Athena AI <ArrowUpRight className="h-4 w-4" />
-        </button>
+          );
+        })}
       </div>
-    </div>
+    </Card>
   );
 }
 
-/* ---------------- Main ---------------- */
-
-function StudentDashboard() {
-  const [category, setCategory] = useState<Category>("All");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dark, setDark] = useState(false);
-  const [visible, setVisible] = useState(6);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  const filtered = useMemo(
-    () => (category === "All" ? POSTS : POSTS.filter((p) => p.category === category)),
-    [category],
-  );
-
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-    const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) setVisible((v) => Math.min(v + 3, filtered.length));
-    }, { rootMargin: "200px" });
-    io.observe(sentinelRef.current);
-    return () => io.disconnect();
-  }, [filtered.length]);
-
-  useEffect(() => { setVisible(6); }, [category]);
-
+function EventsWidget() {
+  const registered = useCampus((s) => s.registeredEvents);
+  const upcoming = seedEvents.slice(0, 3);
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
-      <div className="flex">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-        <div className="flex-1 min-w-0">
-          <TopBar onMenu={() => setSidebarOpen(true)} dark={dark} setDark={setDark} />
-
-          <div className="mx-auto max-w-[1400px] px-4 lg:px-8 py-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6">
-            {/* Center */}
-            <main className="min-w-0 space-y-5">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Campus Feed</h2>
-                <p className="text-sm text-[#6B7280] mt-1">The live pulse of your university, in one place.</p>
-              </div>
-
-              {/* Category tabs */}
-              <div className="flex gap-1 overflow-x-auto -mx-4 px-4 border-b border-[#E5E7EB] scrollbar-hide">
-                {CATEGORIES.map((c) => {
-                  const active = c === category;
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => setCategory(c)}
-                      className={cn(
-                        "relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors",
-                        active ? "text-[#111111]" : "text-[#6B7280] hover:text-[#111111]",
-                      )}
-                    >
-                      {c}
-                      {active && (
-                        <span className="absolute left-2 right-2 -bottom-px h-[3px] rounded-full bg-[#F97316]" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <Composer />
-
-              <div className="space-y-4">
-                {filtered.slice(0, visible).map((p, i) => (
-                  <PostCard key={p.id} post={p} index={i} />
-                ))}
-              </div>
-
-              {visible < filtered.length && (
-                <div ref={sentinelRef} className="h-12 grid place-items-center text-sm text-[#6B7280]">
-                  Loading more…
-                </div>
-              )}
-              {visible >= filtered.length && filtered.length > 3 && (
-                <div className="h-12 grid place-items-center text-xs text-[#6B7280]">
-                  You're all caught up ✨
-                </div>
-              )}
-            </main>
-
-            {/* Right rail */}
-            <aside className="hidden xl:block space-y-5">
-              <div className="sticky top-24 space-y-5">
-                <AthenaAICard />
-
-                <Widget title="Today's Schedule" action="Calendar">
-                  <ol className="space-y-1">
-                    {CLASSES.map((c, i) => (
-                      <li key={i} className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
-                        c.accent ? "bg-[#FFF7ED]" : "hover:bg-[#F8F8F8]",
-                      )}>
-                        <div className={cn(
-                          "text-xs font-bold tabular-nums w-10 shrink-0",
-                          c.accent ? "text-[#F97316]" : "text-[#111111]",
-                        )}>{c.time}</div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-[#111111] truncate">{c.title}</div>
-                          <div className="text-xs text-[#6B7280]">{c.room}</div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-[#6B7280]" />
-                      </li>
-                    ))}
-                  </ol>
-                </Widget>
-
-                <Widget title="Recent Updates" action="See all">
-                  <ul className="space-y-3">
-                    {NOTIFS.map((n, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="h-9 w-9 rounded-full bg-[#F8F8F8] grid place-items-center shrink-0">
-                          <n.icon className="h-4 w-4 text-[#F97316]" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-[#111111] truncate">{n.title}</div>
-                          <div className="text-xs text-[#6B7280] truncate">{n.meta} · {n.time}</div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </Widget>
-
-                <Widget title="Quick Actions">
-                  <div className="grid grid-cols-2 gap-2">
-                    {QUICK.map((q) => (
-                      <button
-                        key={q.label}
-                        className="flex items-center gap-2 h-11 px-3 rounded-xl bg-[#F8F8F8] hover:bg-[#FFF7ED] hover:text-[#F97316] text-sm font-medium text-[#111111] transition-all text-left"
-                      >
-                        <q.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{q.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </Widget>
-
-                <Widget title="Upcoming Events" action="Explore">
-                  <ul className="space-y-2.5">
-                    {UPCOMING.map((e, i) => (
-                      <li key={i} className="flex items-center gap-3 rounded-xl p-2 hover:bg-[#F8F8F8] transition-colors">
-                        <div className="h-10 w-10 rounded-xl bg-[#111111] text-white grid place-items-center shrink-0">
-                          <PartyPopper className="h-4 w-4 text-[#F97316]" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-[#111111] truncate">{e.name}</div>
-                          <div className="text-xs text-[#6B7280]">{e.date}</div>
-                        </div>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#F97316] px-2 py-1 rounded-full bg-[#FFF7ED]">{e.tag}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Widget>
-
-                <ProfileCard />
-              </div>
-            </aside>
+    <Card>
+      <WidgetHead title="Happening soon" to={`${R}/events`} />
+      <div className="mt-3 space-y-3">
+        {upcoming.map((e) => (
+          <div key={e.id} className="flex items-center gap-3">
+            <div className="h-9 w-9 shrink-0 rounded-xl" style={{ background: e.cover }} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm text-foreground">{e.title}</p>
+              <p className="text-xs text-muted-foreground">{e.date} · {e.venue}</p>
+            </div>
+            {registered.includes(e.id) && <Badge tone="success">Going</Badge>}
           </div>
-
-          {/* Mobile bottom nav */}
-          <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur-xl border-t border-[#E5E7EB] flex justify-around py-2">
-            {[
-              { icon: Home, label: "Feed" },
-              { icon: Bot, label: "AI" },
-              { icon: Plus, label: "Post", primary: true },
-              { icon: Bell, label: "Alerts" },
-              { icon: User, label: "Me" },
-            ].map((t, i) => (
-              <button key={i} className={cn(
-                "flex flex-col items-center gap-1 flex-1 text-[10px] font-medium",
-                t.primary ? "text-[#F97316]" : "text-[#6B7280]",
-              )}>
-                <div className={cn(
-                  "h-10 w-10 grid place-items-center rounded-full",
-                  t.primary && "bg-[#F97316] text-white",
-                )}>
-                  <t.icon className="h-5 w-5" />
-                </div>
-                {t.label}
-              </button>
-            ))}
-          </nav>
-          <div className="h-20 lg:hidden" />
-        </div>
+        ))}
       </div>
+    </Card>
+  );
+}
+
+function NewsWidget() {
+  return (
+    <Card>
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-[var(--accent)]" />
+        <p className="text-sm font-semibold text-foreground">Campus pulse</p>
+      </div>
+      <ul className="mt-3 space-y-2">
+        {campusNews.map((n) => (
+          <li key={n} className="flex items-start gap-2 text-xs text-muted-foreground">
+            <Zap className="mt-0.5 h-3 w-3 shrink-0 text-[var(--accent)]" /> {n}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function WidgetHead({ title, to }: { title: string; to: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <Link to={to as never} className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-[var(--accent)]">
+        View all <ArrowUpRight className="h-3 w-3" />
+      </Link>
     </div>
   );
 }
