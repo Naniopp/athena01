@@ -69,15 +69,30 @@ function LoginPage() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("not confirmed")) {
+        setError("Your email isn't verified yet. Use “Sign in with email code” below to verify and get in.");
+        setMode("otp");
+      } else if (msg.includes("invalid login")) {
+        setError("Incorrect email or password. If you signed up with Google or an email code, use that method instead.");
+      } else {
+        setError(error.message);
+      }
       return;
     }
-    if (next) window.location.assign(next);
-    else navigate({ to: "/dashboards" });
+    if (!data.session) {
+      setError("Could not start a session. Please try again.");
+      return;
+    }
+    goNext();
   }
+
 
   async function handleGoogle() {
     setError(null);
