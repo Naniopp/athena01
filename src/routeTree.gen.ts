@@ -19,6 +19,7 @@ import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboard.student.attendance'
 import { Route as DashboardStudentAiRouteImport } from './routes/dashboard.student.ai'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -75,6 +76,12 @@ const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentAttendanceRoute =
+  DashboardStudentAttendanceRouteImport.update({
+    id: '/attendance',
+    path: '/attendance',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardStudentAiRoute = DashboardStudentAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,6 +127,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesById {
@@ -135,6 +144,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
+  '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRouteTypes {
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
+    | '/dashboard/student/attendance'
     | '/dashboard/student/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
+    | '/dashboard/student/attendance'
     | '/dashboard/student'
   id:
     | '__root__'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
+    | '/dashboard/student/attendance'
     | '/dashboard/student/'
   fileRoutesById: FileRoutesById
 }
@@ -270,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/attendance': {
+      id: '/dashboard/student/attendance'
+      path: '/attendance'
+      fullPath: '/dashboard/student/attendance'
+      preLoaderRoute: typeof DashboardStudentAttendanceRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/ai': {
       id: '/dashboard/student/ai'
       path: '/ai'
@@ -296,11 +316,13 @@ declare module '@tanstack/react-router' {
 
 interface DashboardStudentRouteChildren {
   DashboardStudentAiRoute: typeof DashboardStudentAiRoute
+  DashboardStudentAttendanceRoute: typeof DashboardStudentAttendanceRoute
   DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
 }
 
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentAiRoute: DashboardStudentAiRoute,
+  DashboardStudentAttendanceRoute: DashboardStudentAttendanceRoute,
   DashboardStudentIndexRoute: DashboardStudentIndexRoute,
 }
 
