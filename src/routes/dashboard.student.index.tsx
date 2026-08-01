@@ -11,7 +11,7 @@ import { useCampus } from "@/lib/campus/store";
 import {
   campusNews, seedAssignments, seedCalendar, seedEvents, type Post, type PostCategory, type PostKind,
 } from "@/lib/campus/seed";
-import { Badge, Btn, Card, Chip, Empty, Modal, Progress, Skeleton, timeAgo, useLoading } from "@/components/campus/ui";
+import { Badge, Btn, Card, Chip, Empty, Progress, Skeleton, timeAgo, useLoading } from "@/components/campus/ui";
 
 const R = "/dashboard/student";
 
