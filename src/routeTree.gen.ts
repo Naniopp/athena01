@@ -19,6 +19,7 @@ import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardStudentAiRouteImport } from './routes/dashboard.student.ai'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -74,6 +75,11 @@ const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentAiRoute = DashboardStudentAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesByTo {
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/dashboard/$role': typeof DashboardRoleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesById {
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRouteTypes {
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/ai'
     | '/dashboard/student/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/dashboard/$role'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/ai'
     | '/dashboard/student'
   id:
     | '__root__'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/ai'
     | '/dashboard/student/'
   fileRoutesById: FileRoutesById
 }
@@ -258,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/ai': {
+      id: '/dashboard/student/ai'
+      path: '/ai'
+      fullPath: '/dashboard/student/ai'
+      preLoaderRoute: typeof DashboardStudentAiRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -276,10 +295,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardStudentRouteChildren {
+  DashboardStudentAiRoute: typeof DashboardStudentAiRoute
   DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
 }
 
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
+  DashboardStudentAiRoute: DashboardStudentAiRoute,
   DashboardStudentIndexRoute: DashboardStudentIndexRoute,
 }
 
