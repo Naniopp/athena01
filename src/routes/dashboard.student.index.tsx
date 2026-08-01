@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/dashboard/student")({
+export const Route = createFileRoute("/dashboard/student/")({
   component: StudentDashboard,
   head: () => ({
     meta: [

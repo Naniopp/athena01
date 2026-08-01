@@ -14,10 +14,10 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardsRouteImport } from './routes/dashboards'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
 import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -46,11 +46,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardStudentRoute = DashboardStudentRouteImport.update({
-  id: '/dashboard/student',
-  path: '/dashboard/student',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoleRoute = DashboardRoleRouteImport.update({
   id: '/dashboard/$role',
   path: '/dashboard/$role',
@@ -68,6 +63,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
+  id: '/dashboard/student/',
+  path: '/dashboard/student/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -89,9 +89,9 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,9 +102,9 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,9 +116,9 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/student': typeof DashboardStudentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,9 +131,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
-    | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,9 +144,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
-    | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student'
   id:
     | '__root__'
     | '/'
@@ -157,9 +157,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
-    | '/dashboard/student'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/dashboard/student/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,9 +171,9 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DashboardRoleRoute: typeof DashboardRoleRoute
-  DashboardStudentRoute: typeof DashboardStudentRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -213,13 +213,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/student': {
-      id: '/dashboard/student'
-      path: '/dashboard/student'
-      fullPath: '/dashboard/student'
-      preLoaderRoute: typeof DashboardStudentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard/$role': {
       id: '/dashboard/$role'
       path: '/dashboard/$role'
@@ -239,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/.mcp/list-tools'
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/student/': {
+      id: '/dashboard/student/'
+      path: '/dashboard/student'
+      fullPath: '/dashboard/student/'
+      preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {
@@ -268,9 +268,9 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DashboardRoleRoute: DashboardRoleRoute,
-  DashboardStudentRoute: DashboardStudentRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  DashboardStudentIndexRoute: DashboardStudentIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
