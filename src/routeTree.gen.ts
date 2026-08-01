@@ -19,6 +19,7 @@ import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardStudentCoursesRouteImport } from './routes/dashboard.student.courses'
 import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboard.student.attendance'
 import { Route as DashboardStudentAiRouteImport } from './routes/dashboard.student.ai'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -76,6 +77,11 @@ const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentCoursesRoute = DashboardStudentCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => DashboardStudentRoute,
+} as any)
 const DashboardStudentAttendanceRoute =
   DashboardStudentAttendanceRouteImport.update({
     id: '/attendance',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesByTo {
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
 }
 export interface FileRoutesById {
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/ai': typeof DashboardStudentAiRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/courses': typeof DashboardStudentCoursesRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
 }
 export interface FileRouteTypes {
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/courses'
     | '/dashboard/student/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/courses'
     | '/dashboard/student'
   id:
     | '__root__'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/ai'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/courses'
     | '/dashboard/student/'
   fileRoutesById: FileRoutesById
 }
@@ -283,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/courses': {
+      id: '/dashboard/student/courses'
+      path: '/courses'
+      fullPath: '/dashboard/student/courses'
+      preLoaderRoute: typeof DashboardStudentCoursesRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/attendance': {
       id: '/dashboard/student/attendance'
       path: '/attendance'
@@ -317,12 +336,14 @@ declare module '@tanstack/react-router' {
 interface DashboardStudentRouteChildren {
   DashboardStudentAiRoute: typeof DashboardStudentAiRoute
   DashboardStudentAttendanceRoute: typeof DashboardStudentAttendanceRoute
+  DashboardStudentCoursesRoute: typeof DashboardStudentCoursesRoute
   DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
 }
 
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentAiRoute: DashboardStudentAiRoute,
   DashboardStudentAttendanceRoute: DashboardStudentAttendanceRoute,
+  DashboardStudentCoursesRoute: DashboardStudentCoursesRoute,
   DashboardStudentIndexRoute: DashboardStudentIndexRoute,
 }
 
