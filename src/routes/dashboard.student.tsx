@@ -1,8 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/campus/Layout";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/student")({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({ to: "/login", search: { next: location.href } });
+    }
+  },
   component: DashboardLayout,
+
   head: () => ({
     meta: [
       { title: "Student Workspace · ATHENA" },

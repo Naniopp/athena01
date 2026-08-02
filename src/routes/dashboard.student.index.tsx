@@ -20,9 +20,9 @@ const CATEGORIES: (PostCategory | "All")[] = [
 ];
 
 export const Route = createFileRoute("/dashboard/student/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    q: typeof s.q === "string" ? s.q : "",
-    compose: typeof s.compose === "string" ? s.compose : "",
+  validateSearch: (s: Record<string, unknown>): { q?: string; compose?: string } => ({
+    ...(typeof s.q === "string" && s.q ? { q: s.q } : {}),
+    ...(typeof s.compose === "string" && s.compose ? { compose: s.compose } : {}),
   }),
   component: FeedPage,
   head: () => ({
@@ -43,7 +43,7 @@ function FeedPage() {
   const posts = useCampus((s) => s.posts);
   const profile = useCampus((s) => s.profile);
   const [cat, setCat] = useState<PostCategory | "All">("All");
-  const [query, setQuery] = useState(q);
+  const [query, setQuery] = useState(q ?? "");
   const [sort, setSort] = useState<"recent" | "top">("recent");
   const [showCompose, setShowCompose] = useState(compose === "1");
 
@@ -469,7 +469,7 @@ function AiWidget() {
     if (!text.trim()) return;
     const id = newChat();
     sendAi(id, text.trim());
-    nav({ to: `${R}/ai` as never });
+    nav({ to: "/dashboard/student/ai" });
   };
 
   return (

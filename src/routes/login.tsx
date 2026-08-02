@@ -1,16 +1,26 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2, KeyRound } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2, KeyRound, AlertCircle, CheckCircle2 } from "lucide-react";
 import heroCampus from "@/assets/hero-campus.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
+import { toast } from "sonner";
+import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
 
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
-  }),
+  ssr: false,
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
+  beforeLoad: async ({ search }) => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      if (search.next) throw redirect({ href: search.next });
+      throw redirect({ to: "/dashboard/student" });
+    }
+  },
+
   head: () => ({
     meta: [
       { title: "Sign in — ATHENA" },
@@ -53,6 +63,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
   const { next } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -64,8 +75,12 @@ function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!email || !password) {
-      setError("Enter your email and password.");
+    if (!isValidEmail(email)) {
+      setError("Enter a valid email address, like you@college.edu.");
+      return;
+    }
+    if (!password) {
+      setError("Enter your password, or use “Sign in with email code” instead.");
       return;
     }
     setBusy(true);
@@ -75,23 +90,19 @@ function LoginPage() {
     });
     setBusy(false);
     if (error) {
-      const msg = error.message.toLowerCase();
-      if (msg.includes("not confirmed")) {
-        setError("Your email isn't verified yet. Use “Sign in with email code” below to verify and get in.");
-        setMode("otp");
-      } else if (msg.includes("invalid login")) {
-        setError("Incorrect email or password. If you signed up with Google or an email code, use that method instead.");
-      } else {
-        setError(error.message);
-      }
+      setError(friendlyAuthError(error.message));
+      if (error.message.toLowerCase().includes("not confirmed")) setMode("otp");
       return;
     }
     if (!data.session) {
       setError("Could not start a session. Please try again.");
       return;
     }
-    goNext();
+    setOk(true);
+    toast.success("Welcome back to ATHENA");
+    setTimeout(goNext, 500);
   }
+
 
 
   async function handleGoogle() {
@@ -101,7 +112,7 @@ function LoginPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        setError(result.error.message ?? "Google sign-in failed.");
+        setError(friendlyAuthError(result.error.message ?? "Google sign-in failed."));
         return;
       }
       if (result.redirected) return;
@@ -171,15 +182,22 @@ function LoginPage() {
                   <input type="checkbox" className="h-4 w-4 rounded border-border accent-[#F97316]" />
                   Remember me
                 </label>
-                <a href="#" className="font-medium text-accent hover:underline">Forgot Password?</a>
+                <Link to="/forgot-password" className="font-medium text-accent hover:underline">Forgot Password?</Link>
               </div>
 
               {error && (
-                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+                <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> <span>{error}</span>
+                </p>
+              )}
+              {ok && (
+                <p role="status" className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                  <CheckCircle2 className="h-4 w-4" /> Signed in — opening your workspace…
+                </p>
               )}
 
-              <button type="submit" disabled={busy} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105 active:translate-y-[1px] disabled:opacity-60">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Sign In <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></>}
+              <button type="submit" disabled={busy || ok} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105 active:translate-y-[1px] disabled:opacity-60">
+                {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Signing in…</> : ok ? <><CheckCircle2 className="h-4 w-4" /> Signed in</> : <>Sign In <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></>}
               </button>
 
               <button

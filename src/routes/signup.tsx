@@ -26,12 +26,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
+import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
 
 
 export const Route = createFileRoute("/signup")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
-  }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
   head: () => ({
     meta: [
       { title: "Get started — ATHENA" },
@@ -131,7 +131,7 @@ function SignupPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        setOauthError(result.error.message ?? "Google sign-up failed.");
+        setOauthError(friendlyAuthError(result.error.message ?? "Google sign-up failed."));
         return;
       }
       if (result.redirected) return;
@@ -307,17 +307,24 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!agree) return;
-    if (direct && !/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Enter a valid email address.");
+    if (!fullName.trim()) {
+      setError("Enter your full name so we know who to greet.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (direct && !isValidEmail(email)) {
+      setError("Enter a valid email address, like you@college.edu.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Use at least 8 characters for your password.");
       return;
     }
     if (password !== password2) {
-      setError("Passwords do not match.");
+      setError("The two passwords don't match.");
+      return;
+    }
+    if (!agree) {
+      setError("Please accept the Terms of Service and Privacy Policy to continue.");
       return;
     }
     const metadata = {
@@ -338,7 +345,7 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
       : await supabase.auth.updateUser({ password, data: metadata });
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error.message));
       return;
     }
     onFinish();
@@ -377,7 +384,9 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
           </label>
 
           {error && (
-            <p className="col-span-full text-sm font-medium text-red-600">{error}</p>
+            <p role="alert" className="col-span-full flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <span>{error}</span>
+            </p>
           )}
 
           <button
