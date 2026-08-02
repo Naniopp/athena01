@@ -75,6 +75,19 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
     else setQ("");
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+
   const results = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return [];
