@@ -63,8 +63,12 @@ function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!email || !password) {
-      setError("Enter your email and password.");
+    if (!isValidEmail(email)) {
+      setError("Enter a valid email address, like you@college.edu.");
+      return;
+    }
+    if (!password) {
+      setError("Enter your password, or use “Sign in with email code” instead.");
       return;
     }
     setBusy(true);
@@ -74,23 +78,19 @@ function LoginPage() {
     });
     setBusy(false);
     if (error) {
-      const msg = error.message.toLowerCase();
-      if (msg.includes("not confirmed")) {
-        setError("Your email isn't verified yet. Use “Sign in with email code” below to verify and get in.");
-        setMode("otp");
-      } else if (msg.includes("invalid login")) {
-        setError("Incorrect email or password. If you signed up with Google or an email code, use that method instead.");
-      } else {
-        setError(error.message);
-      }
+      setError(friendlyAuthError(error.message));
+      if (error.message.toLowerCase().includes("not confirmed")) setMode("otp");
       return;
     }
     if (!data.session) {
       setError("Could not start a session. Please try again.");
       return;
     }
-    goNext();
+    setOk(true);
+    toast.success("Welcome back to ATHENA");
+    setTimeout(goNext, 500);
   }
+
 
 
   async function handleGoogle() {
