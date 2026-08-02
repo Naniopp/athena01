@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, LayoutDashboard, Sparkles, Network, ShieldCheck, Loader2, KeyRound, AlertCircle, CheckCircle2 } from "lucide-react";
 import heroCampus from "@/assets/hero-campus.jpg";
