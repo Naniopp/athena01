@@ -9,7 +9,7 @@ import { Card, PageHeader, Chip, Btn, Modal, SearchInput, Skeleton, Empty, Badge
 
 export const Route = createFileRoute("/dashboard/student/placements")({
   component: PlacementsPage,
-  validateSearch: (search: Record<string, unknown>) => ({ q: typeof search.q === "string" ? search.q : "" }),
+  validateSearch: (search: Record<string, unknown>): { q?: string } => (typeof search.q === "string" && search.q ? { q: search.q } : {}),
   head: () => ({
     meta: [
       { title: "Placements · ATHENA" },

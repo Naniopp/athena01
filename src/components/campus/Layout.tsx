@@ -335,7 +335,7 @@ export function DashboardLayout() {
               </button>
               <p className="hidden flex-1 text-center text-sm font-semibold tracking-tight text-foreground xl:block">{title}</p>
               <div className="ml-auto flex items-center gap-1">
-                <Btn variant="accent" size="sm" className="hidden sm:inline-flex" onClick={() => navigate({ to: R, search: { compose: "1" } as never })}>
+                <Btn variant="accent" size="sm" className="hidden sm:inline-flex" onClick={() => navigate({ to: "/dashboard/student", search: { compose: "1" } })}>
                   <Plus className="h-3.5 w-3.5" /> Create
                 </Btn>
                 <Link to={`${R}/messages`} aria-label="Messages" className="rounded-full p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground">

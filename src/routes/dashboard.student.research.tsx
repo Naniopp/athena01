@@ -16,7 +16,7 @@ export const Route = createFileRoute("/dashboard/student/research")({
       { property: "og:description", content: "Explore papers, projects, and collaborators across campus research." },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : "" }),
+  validateSearch: (s: Record<string, unknown>): { q?: string } => (typeof s.q === "string" && s.q ? { q: s.q } : {}),
 });
 
 const OPEN_PROJECTS = [
