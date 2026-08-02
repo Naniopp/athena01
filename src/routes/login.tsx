@@ -10,8 +10,17 @@ import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
 
 
 export const Route = createFileRoute("/login")({
+  ssr: false,
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
     typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
+  beforeLoad: async ({ search }) => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      if (search.next) throw redirect({ href: search.next });
+      throw redirect({ to: "/dashboard/student" });
+    }
+  },
+
   head: () => ({
     meta: [
       { title: "Sign in — ATHENA" },
