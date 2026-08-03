@@ -238,7 +238,7 @@ function ProfileMenu() {
           <button onClick={() => { setOpen(false); navigate({ to: `${R}/profile` }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted"><User className="h-4 w-4" /> View profile</button>
           <button onClick={() => { setOpen(false); navigate({ to: `${R}/settings` }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted"><SettingsIcon className="h-4 w-4" /> Settings</button>
           <button onClick={() => { setOpen(false); navigate({ to: `${R}/messages` }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted"><Mail className="h-4 w-4" /> Messages</button>
-          <button onClick={() => { toast.success("Signed out"); navigate({ to: "/login" }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10"><LogOut className="h-4 w-4" /> Logout</button>
+          <button onClick={async () => { await signOutEverywhere(); navigate({ to: "/login", replace: true }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10"><LogOut className="h-4 w-4" /> Logout</button>
         </div>
       )}
     </div>
@@ -299,6 +299,9 @@ export function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SessionBanner />
+      <ProfileWizard />
+
       {offline && (
         <div className="flex items-center justify-center gap-2 bg-foreground px-4 py-1.5 text-xs text-background">
           <WifiOff className="h-3.5 w-3.5" /> You're offline — changes are saved locally and will sync later.
@@ -315,7 +318,7 @@ export function DashboardLayout() {
           <div className="flex-1 overflow-y-auto pr-1">
             <SidebarLinks />
           </div>
-          <button onClick={() => { toast.success("Signed out"); navigate({ to: "/login" }); }} className="mt-3 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive">
+          <button onClick={async () => { await signOutEverywhere(); navigate({ to: "/login", replace: true }); }} className="mt-3 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive">
             <LogOut className="h-[18px] w-[18px]" /> Logout
           </button>
         </aside>
