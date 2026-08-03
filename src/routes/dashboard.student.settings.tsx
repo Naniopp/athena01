@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Sun, Moon, Download, RotateCcw, LogOut, ShieldOff, Monitor, Smartphone } from "lucide-react";
+import { Sun, Moon, Download, RotateCcw, LogOut, ShieldOff, Monitor, Smartphone, KeyRound, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
+import { signOutEverywhere } from "@/lib/auth-session";
 import { useCampus } from "@/lib/campus/store";
 import { Card, PageHeader, Toggle, Btn, Modal, Badge, timeAgo } from "@/components/campus/ui";
 
@@ -67,8 +69,10 @@ function SettingsPage() {
     toast.success("Demo data reset");
   };
 
+  const [signingOut, setSigningOut] = useState(false);
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setSigningOut(true);
+    await signOutEverywhere();
     navigate({ to: "/login", replace: true });
   };
 
@@ -201,9 +205,16 @@ function SettingsPage() {
           </div>
         </Card>
 
+        <ChangePassword />
+
         <Card>
           <p className="mb-3 text-sm font-semibold text-foreground">Account</p>
-          <Btn variant="danger" onClick={signOut}><LogOut className="h-4 w-4" /> Sign out</Btn>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Signing out revokes your session on every device you're logged in on.
+          </p>
+          <Btn variant="danger" onClick={signOut} disabled={signingOut}>
+            <LogOut className="h-4 w-4" /> {signingOut ? "Signing out…" : "Sign out of all devices"}
+          </Btn>
         </Card>
       </div>
 
@@ -215,5 +226,102 @@ function SettingsPage() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+function pwScore(pw: string) {
+  let n = 0;
+  if (pw.length >= 8) n++;
+  if (/[A-Z]/.test(pw)) n++;
+  if (/[0-9]/.test(pw)) n++;
+  if (/[^A-Za-z0-9]/.test(pw)) n++;
+  return n;
+}
+
+function ChangePassword() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState(false);
+
+  const cls =
+    "w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10";
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setOk(false);
+    if (next.length < 8) return setError("Your new password must be at least 8 characters.");
+    if (pwScore(next) < 3) return setError("Use a mix of uppercase letters, numbers, or symbols to strengthen it.");
+    if (next !== confirm) return setError("The two new passwords don't match.");
+    if (next === current) return setError("Your new password must be different from your current one.");
+
+    setBusy(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData.user?.email;
+    if (email && current) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: current });
+      if (signInError) {
+        setBusy(false);
+        return setError("Your current password is incorrect.");
+      }
+    }
+    const { error: upErr } = await supabase.auth.updateUser({ password: next });
+    setBusy(false);
+    if (upErr) return setError(friendlyAuthError(upErr.message));
+    setCurrent("");
+    setNext("");
+    setConfirm("");
+    setOk(true);
+    toast.success("Password updated");
+  };
+
+  const s = pwScore(next);
+  const strength = ["Too weak", "Weak", "Fair", "Strong", "Excellent"][s];
+
+  return (
+    <Card>
+      <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-foreground">
+        <KeyRound className="h-4 w-4" /> Change password
+      </p>
+      <p className="mb-4 text-xs text-muted-foreground">
+        You'll stay signed in on this device. Other devices keep their sessions until you sign out everywhere.
+      </p>
+      <form className="space-y-3" onSubmit={submit}>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Current password</span>
+          <input type="password" className={cls} value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Leave blank if you signed in with Google or a code" />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-muted-foreground">New password</span>
+          <input type="password" className={cls} value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 8 characters" />
+        </label>
+        {next && (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(s / 4) * 100}%` }} />
+            </div>
+            <span className="text-xs text-muted-foreground">{strength}</span>
+          </div>
+        )}
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Confirm new password</span>
+          <input type="password" className={cls} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter new password" />
+        </label>
+
+        {error && (
+          <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
+        )}
+        {ok && (
+          <p className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+            <CheckCircle2 className="h-4 w-4" /> Password updated successfully.
+          </p>
+        )}
+
+        <Btn type="submit" variant="accent" disabled={busy}>{busy ? "Updating…" : "Update password"}</Btn>
+      </form>
+    </Card>
   );
 }
