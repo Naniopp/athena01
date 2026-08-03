@@ -12,6 +12,9 @@ import {
   seedCourses, seedAssignments, seedEvents, seedClubs, seedBooks, seedJobs, seedPapers,
 } from "@/lib/campus/seed";
 import { Btn, Skeleton, timeAgo } from "./ui";
+import { SessionBanner } from "./SessionBanner";
+import { ProfileWizard } from "./ProfileWizard";
+import { signOutEverywhere } from "@/lib/auth-session";
 
 const R = "/dashboard/student";
 
