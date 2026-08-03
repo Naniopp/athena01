@@ -108,20 +108,8 @@ function ResetPasswordPage() {
             </div>
           )}
 
-          {phase === "invalid" && (
-            <div className="space-y-5">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">This reset link isn't valid</h1>
-              <p className="text-sm text-muted-foreground">
-                It may have expired or already been used. Request a fresh link and try again.
-              </p>
-              <Link
-                to="/forgot-password"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105"
-              >
-                Request a new link
-              </Link>
-            </div>
-          )}
+          {phase === "invalid" && <InvalidLink />}
+
 
           {phase === "done" && (
             <div className="space-y-4">
