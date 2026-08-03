@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, Sparkles, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { friendlyAuthError } from "@/lib/auth-errors";
+import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
@@ -200,6 +200,92 @@ function ResetPasswordPage() {
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+/** Explains why a recovery link failed and offers a one-click resend. */
+function InvalidLink() {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+  const reason = hash.includes("expired")
+    ? "This link has expired. Reset links are valid for 60 minutes."
+    : hash.includes("error")
+      ? "This link was already used, or a newer link was requested after it."
+      : "We couldn't find a valid recovery session for this link — it may have expired, already been used, or been opened in a different browser.";
+
+  const resend = async () => {
+    setError(null);
+    if (!isValidEmail(email)) {
+      setError("Enter the email on your ATHENA account, like you@college.edu.");
+      return;
+    }
+    setBusy(true);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    if (err) {
+      setError(friendlyAuthError(err.message));
+      return;
+    }
+    setSent(true);
+    setCooldown(60);
+    toast.success("New reset link sent to your email.");
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+        <ShieldCheck className="h-5 w-5" />
+      </div>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">This reset link isn't valid anymore</h1>
+      <p className="text-sm text-muted-foreground">{reason}</p>
+
+      <ol className="space-y-2 rounded-2xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+        <li>1. Enter your account email below and request a fresh link.</li>
+        <li>2. Open the newest email — older links stop working once a new one is sent.</li>
+        <li>3. Open the link in this same browser, within 60 minutes.</li>
+      </ol>
+
+      <div className="space-y-3">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@college.edu"
+          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20"
+        />
+        {error && (
+          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        )}
+        {sent && (
+          <p className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> A new reset link is on its way to {email}. Check spam if it doesn't arrive.
+          </p>
+        )}
+        <button
+          onClick={resend}
+          disabled={busy || cooldown > 0}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-4 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-105 disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : cooldown > 0 ? `Resend in ${cooldown}s` : sent ? "Resend link" : "Send me a new link"}
+        </button>
+        <Link to="/login" className="block text-center text-sm text-muted-foreground hover:text-foreground">
+          Back to sign in
+        </Link>
+      </div>
     </div>
   );
 }
