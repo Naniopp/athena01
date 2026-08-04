@@ -1,14 +1,55 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Btn, Modal } from "./ui";
 import { useCampus } from "@/lib/campus/store";
 
 const DONE_KEY = "athena.profile-complete-v1";
+const DRAFT_KEY = "athena.profile-draft-v1";
+const SNOOZE_KEY = "athena.profile-snoozed-v1";
 
 export function isProfileComplete(): boolean {
   if (typeof window === "undefined") return true;
   return window.localStorage.getItem(DONE_KEY) === "1";
+}
+
+type Draft = {
+  step: number;
+  name: string;
+  rollNo: string;
+  department: string;
+  semester: string;
+  bio: string;
+  skills: string;
+  interests: string[];
+  github: string;
+  linkedin: string;
+  savedAt: string;
+};
+
+function readDraft(): Draft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as Draft;
+    if (typeof d?.step !== "number") return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+/** True when a partially-filled wizard draft is waiting to be resumed. */
+export function hasProfileDraft(): boolean {
+  const d = readDraft();
+  return !!d && (d.step > 0 || !!d.name || !!d.rollNo || d.interests?.length > 0);
+}
+
+export function clearProfileDraft() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(DRAFT_KEY);
+  window.sessionStorage.removeItem(SNOOZE_KEY);
 }
 
 const DEPTS = [
@@ -24,34 +65,54 @@ const INTERESTS = ["AI/ML", "Web Dev", "Robotics", "Design", "Finance", "Researc
 const field =
   "w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10";
 
-/** Multi-step profile completion wizard shown after login until finished. */
+/** Multi-step profile completion wizard. Progress is saved on every change so
+ *  the user can exit at any point and resume exactly where they left off. */
 export function ProfileWizard() {
   const profile = useCampus((s) => s.profile);
   const setProfile = useCampus((s) => s.setProfile);
 
-  const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const draft = useRef<Draft | null>(null);
+  if (draft.current === null) draft.current = readDraft();
+  const d = draft.current;
 
-  const [name, setName] = useState(profile.name);
-  const [rollNo, setRollNo] = useState(profile.rollNo);
-  const [department, setDepartment] = useState(profile.department);
-  const [semester, setSemester] = useState(String(profile.semester));
-  const [bio, setBio] = useState(profile.bio);
-  const [skills, setSkills] = useState(profile.skills.join(", "));
-  const [interests, setInterests] = useState<string[]>(profile.interests);
-  const [github, setGithub] = useState(profile.links.github);
-  const [linkedin, setLinkedin] = useState(profile.links.linkedin);
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(d?.step ?? 0);
+  const [error, setError] = useState<string | null>(null);
+  const [resumed, setResumed] = useState(false);
+
+  const [name, setName] = useState(d?.name ?? profile.name);
+  const [rollNo, setRollNo] = useState(d?.rollNo ?? profile.rollNo);
+  const [department, setDepartment] = useState(d?.department ?? profile.department);
+  const [semester, setSemester] = useState(d?.semester ?? String(profile.semester));
+  const [bio, setBio] = useState(d?.bio ?? profile.bio);
+  const [skills, setSkills] = useState(d?.skills ?? profile.skills.join(", "));
+  const [interests, setInterests] = useState<string[]>(d?.interests ?? profile.interests);
+  const [github, setGithub] = useState(d?.github ?? profile.links.github);
+  const [linkedin, setLinkedin] = useState(d?.linkedin ?? profile.links.linkedin);
 
   useEffect(() => {
-    if (!isProfileComplete()) setOpen(true);
+    if (isProfileComplete()) return;
+    if (window.sessionStorage.getItem(SNOOZE_KEY) === "1") return;
+    setOpen(true);
+    if (hasProfileDraft()) setResumed(true);
   }, []);
+
+  // Autosave the draft so exiting never loses entered steps.
+  useEffect(() => {
+    if (typeof window === "undefined" || isProfileComplete()) return;
+    const payload: Draft = {
+      step, name, rollNo, department, semester, bio, skills, interests, github, linkedin,
+      savedAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+  }, [step, name, rollNo, department, semester, bio, skills, interests, github, linkedin]);
 
   const toggleInterest = (i: string) =>
     setInterests((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
 
   const next = () => {
     setError(null);
+    setResumed(false);
     if (step === 0) {
       if (name.trim().length < 2) return setError("Enter your full name.");
       if (!rollNo.trim()) return setError("Enter your roll number.");
@@ -72,18 +133,22 @@ export function ProfileWizard() {
     }
     setProfile({ bio: bio.trim(), links: { ...profile.links, github: github.trim(), linkedin: linkedin.trim() } });
     window.localStorage.setItem(DONE_KEY, "1");
+    clearProfileDraft();
     setOpen(false);
     toast.success("Profile completed", { description: "Your dashboard is now personalised." });
   };
 
-  const skip = () => {
-    window.localStorage.setItem(DONE_KEY, "1");
+  /** Exit without losing anything: draft stays, wizard is snoozed for this session. */
+  const finishLater = () => {
+    window.sessionStorage.setItem(SNOOZE_KEY, "1");
     setOpen(false);
-    toast.message("You can finish your profile anytime in Settings → Profile.");
+    toast.message("Progress saved", {
+      description: `We saved step ${step + 1} of 3 — resume anytime from Settings → Profile.`,
+    });
   };
 
   return (
-    <Modal open={open} onClose={skip} title="Complete your profile">
+    <Modal open={open} onClose={finishLater} title="Complete your profile">
       <div className="mb-5 flex items-center gap-2">
         {[0, 1, 2].map((i) => (
           <div
@@ -92,6 +157,15 @@ export function ProfileWizard() {
           />
         ))}
       </div>
+
+      {resumed && (
+        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 p-3 text-xs text-foreground">
+          <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+          <span>
+            Welcome back — we picked up right where you left off at step {step + 1} of 3. Everything you entered is still here.
+          </span>
+        </div>
+      )}
 
       {step === 0 && (
         <div className="space-y-4">
@@ -113,8 +187,8 @@ export function ProfileWizard() {
           <label className="block">
             <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Department</span>
             <select className={field} value={department} onChange={(e) => setDepartment(e.target.value)}>
-              {[...new Set([profile.department, ...DEPTS])].map((d) => (
-                <option key={d} value={d}>{d}</option>
+              {[...new Set([profile.department, ...DEPTS])].map((dept) => (
+                <option key={dept} value={dept}>{dept}</option>
               ))}
             </select>
           </label>
@@ -178,15 +252,20 @@ export function ProfileWizard() {
 
       <div className="mt-6 flex items-center justify-between gap-2">
         {step > 0 ? (
-          <Btn variant="outline" size="sm" onClick={() => { setError(null); setStep((s) => s - 1); }}>
+          <Btn variant="outline" size="sm" onClick={() => { setError(null); setResumed(false); setStep((s) => s - 1); }}>
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </Btn>
         ) : (
-          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">Skip for now</button>
+          <span />
         )}
-        <Btn variant="accent" size="sm" onClick={next}>
-          {step === 2 ? (<><Sparkles className="h-3.5 w-3.5" /> Finish</>) : (<>Continue <ArrowRight className="h-3.5 w-3.5" /></>)}
-        </Btn>
+        <div className="flex items-center gap-3">
+          <button onClick={finishLater} className="text-xs text-muted-foreground hover:text-foreground">
+            Save &amp; finish later
+          </button>
+          <Btn variant="accent" size="sm" onClick={next}>
+            {step === 2 ? (<><Sparkles className="h-3.5 w-3.5" /> Finish</>) : (<>Continue <ArrowRight className="h-3.5 w-3.5" /></>)}
+          </Btn>
+        </div>
       </div>
     </Modal>
   );
