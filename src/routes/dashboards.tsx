@@ -683,11 +683,7 @@ function FacultyDashboard() {
       user={{ name: "Dr. Sarah Wilson", role: "Professor · CS", initials: "SW" }}
       sidebar={[
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
-        { label: "My Classes", icon: <BookOpen /> },
         { label: "Students", icon: <Users /> },
-        { label: "Attendance", icon: <CheckCircle2 /> },
-        { label: "Assignments", icon: <ClipboardList /> },
-        { label: "Exams", icon: <FileText /> },
         { label: "Announcements", icon: <Megaphone /> },
         { label: "Analytics", icon: <LineChartIcon /> },
       ]}
