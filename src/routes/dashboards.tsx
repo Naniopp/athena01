@@ -503,9 +503,6 @@ function StudentDashboard() {
       user={{ name: "Alex Johnson", role: "CS · Semester 5", initials: "AJ" }}
       sidebar={[
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
-        { label: "My Classes", icon: <BookOpen /> },
-        { label: "Assignments", icon: <ClipboardList /> },
-        { label: "Attendance", icon: <CheckCircle2 /> },
         { label: "Timetable", icon: <CalendarIcon /> },
         { label: "Events", icon: <Megaphone /> },
         { label: "Messages", icon: <MessageSquare /> },
@@ -686,11 +683,7 @@ function FacultyDashboard() {
       user={{ name: "Dr. Sarah Wilson", role: "Professor · CS", initials: "SW" }}
       sidebar={[
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
-        { label: "My Classes", icon: <BookOpen /> },
         { label: "Students", icon: <Users /> },
-        { label: "Attendance", icon: <CheckCircle2 /> },
-        { label: "Assignments", icon: <ClipboardList /> },
-        { label: "Exams", icon: <FileText /> },
         { label: "Announcements", icon: <Megaphone /> },
         { label: "Analytics", icon: <LineChartIcon /> },
       ]}
@@ -798,7 +791,7 @@ function ClubDashboard() {
         { label: "Events", icon: <CalendarIcon /> },
         { label: "Registrations", icon: <ClipboardList /> },
         { label: "Requests", icon: <FileText /> },
-        { label: "Finances", icon: <Wallet /> },
+        
         { label: "Announcements", icon: <Megaphone /> },
         { label: "Messages", icon: <MessageSquare /> },
       ]}
@@ -938,7 +931,7 @@ function AdminDashboard() {
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
         { label: "Users", icon: <Users /> },
         { label: "Departments", icon: <Building2 /> },
-        { label: "Academics", icon: <BookOpen /> },
+        
         { label: "Clubs", icon: <Briefcase /> },
         { label: "Reports", icon: <FileText /> },
         { label: "System", icon: <Settings /> },
