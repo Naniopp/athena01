@@ -503,9 +503,6 @@ function StudentDashboard() {
       user={{ name: "Alex Johnson", role: "CS · Semester 5", initials: "AJ" }}
       sidebar={[
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
-        { label: "My Classes", icon: <BookOpen /> },
-        { label: "Assignments", icon: <ClipboardList /> },
-        { label: "Attendance", icon: <CheckCircle2 /> },
         { label: "Timetable", icon: <CalendarIcon /> },
         { label: "Events", icon: <Megaphone /> },
         { label: "Messages", icon: <MessageSquare /> },
