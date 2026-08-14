@@ -931,7 +931,7 @@ function AdminDashboard() {
         { label: "Dashboard", icon: <LayoutDashboard />, active: true },
         { label: "Users", icon: <Users /> },
         { label: "Departments", icon: <Building2 /> },
-        { label: "Academics", icon: <BookOpen /> },
+        
         { label: "Clubs", icon: <Briefcase /> },
         { label: "Reports", icon: <FileText /> },
         { label: "System", icon: <Settings /> },
