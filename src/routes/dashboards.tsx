@@ -791,7 +791,7 @@ function ClubDashboard() {
         { label: "Events", icon: <CalendarIcon /> },
         { label: "Registrations", icon: <ClipboardList /> },
         { label: "Requests", icon: <FileText /> },
-        { label: "Finances", icon: <Wallet /> },
+        
         { label: "Announcements", icon: <Megaphone /> },
         { label: "Messages", icon: <MessageSquare /> },
       ]}
