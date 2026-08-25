@@ -62,7 +62,7 @@ export async function writeAudit(
     entity: entry.entity,
     entity_id: entry.entityId ?? null,
     department_id: entry.departmentId ?? null,
-    metadata: entry.metadata ?? {},
+    metadata: (entry.metadata ?? {}) as never,
   });
   void supabase;
 }
