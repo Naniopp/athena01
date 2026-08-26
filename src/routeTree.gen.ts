@@ -18,6 +18,7 @@ import { Route as DashboardsRouteImport } from './routes/dashboards'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
+import { Route as DashboardFacultyRouteImport } from './routes/dashboard.faculty'
 import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -82,6 +83,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const DashboardStudentRoute = DashboardStudentRouteImport.update({
   id: '/dashboard/student',
   path: '/dashboard/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardFacultyRoute = DashboardFacultyRouteImport.update({
+  id: '/dashboard/faculty',
+  path: '/dashboard/faculty',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoleRoute = DashboardRoleRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
+  '/dashboard/faculty': typeof DashboardFacultyRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
+  '/dashboard/faculty': typeof DashboardFacultyRoute
   '/dashboard': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
+  '/dashboard/faculty': typeof DashboardFacultyRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/dashboard/faculty'
     | '/dashboard/student'
     | '/dashboard/'
     | '/.lovable/oauth/consent'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/dashboard/faculty'
     | '/dashboard'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/dashboard/faculty'
     | '/dashboard/student'
     | '/dashboard/'
     | '/.lovable/oauth/consent'
@@ -395,6 +407,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DashboardRoleRoute: typeof DashboardRoleRoute
+  DashboardFacultyRoute: typeof DashboardFacultyRoute
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/student'
       fullPath: '/dashboard/student'
       preLoaderRoute: typeof DashboardStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/faculty': {
+      id: '/dashboard/faculty'
+      path: '/dashboard/faculty'
+      fullPath: '/dashboard/faculty'
+      preLoaderRoute: typeof DashboardFacultyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/$role': {
@@ -660,6 +680,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DashboardRoleRoute: DashboardRoleRoute,
+  DashboardFacultyRoute: DashboardFacultyRoute,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
