@@ -43,13 +43,14 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-type Role = "student" | "faculty" | "club" | "admin";
+type Role = "student" | "faculty" | "hod" | "admin" | "super_admin";
 
-const ROLES: { id: Role; title: string; desc: string; icon: React.ReactNode }[] = [
-  { id: "student", title: "Student", desc: "Access classes, assignments, attend events and more.", icon: <GraduationCap className="h-6 w-6" /> },
-  { id: "faculty", title: "Faculty", desc: "Manage classes, track performance and engage with students.", icon: <Presentation className="h-6 w-6" /> },
-  { id: "club", title: "Club", desc: "Organize events, manage members and grow your club.", icon: <Users className="h-6 w-6" /> },
-  { id: "admin", title: "Admin", desc: "Oversee operations, users, reports and analytics.", icon: <ShieldCheck className="h-6 w-6" /> },
+const ROLES: { id: Role; title: string; desc: string; icon: React.ReactNode; approval?: boolean }[] = [
+  { id: "student", title: "Student", desc: "Follow your campus feed, communities, events and academics.", icon: <GraduationCap className="h-6 w-6" /> },
+  { id: "faculty", title: "Faculty", desc: "Teach, mentor and track your classes and students.", icon: <Presentation className="h-6 w-6" /> },
+  { id: "hod", title: "Head of Department", desc: "Lead faculty, subjects, timetable and approvals.", icon: <Users className="h-6 w-6" />, approval: true },
+  { id: "admin", title: "Administrator", desc: "Oversee users, departments, moderation and reports.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
+  { id: "super_admin", title: "Super Admin", desc: "Institution settings, roles, security and audit.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
 ];
 
 function TopNav() {
@@ -120,8 +121,8 @@ function SignupPage() {
   const { next } = Route.useSearch();
   const finish = () => {
     if (next) window.location.assign(next);
-    else if (role) navigate({ to: "/dashboard/$role", params: { role } });
-    else navigate({ to: "/dashboards" });
+    // The database decides which workspace this account belongs to.
+    else navigate({ to: "/dashboard" });
   };
 
   async function handleGoogle() {
@@ -300,8 +301,8 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
   const idLabel = useMemo(() => {
     if (role === "student") return "Student ID";
     if (role === "faculty") return "Faculty ID";
-    if (role === "club") return "Club ID";
-    return "Admin ID";
+    if (role === "hod") return "Faculty ID";
+    return "Staff ID";
   }, [role]);
 
   const onSubmit = async (e: React.FormEvent) => {
