@@ -226,6 +226,11 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
               <div className="flex-1">
                 <div className="text-lg font-semibold text-foreground">{r.title}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{r.desc}</div>
+                {r.approval && (
+                  <div className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                    Needs approval — you start as a student until a super admin confirms it
+                  </div>
+                )}
               </div>
               {selected && (
                 <div className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full bg-[#F97316] text-white">
