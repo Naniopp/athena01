@@ -84,6 +84,19 @@ export const getMySession = createServerFn({ method: "GET" })
             : "student";
 
       await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: initial });
+
+      // Privileged roles are never self-granted: raise a request for review instead.
+      const privileged = ["hod", "admin", "super_admin"];
+      if (bootstrapRole !== "super_admin" && requested && privileged.includes(requested)) {
+        await supabaseAdmin.from("approvals").insert({
+          kind: "role_request",
+          subject_line: `${profile.full_name} requested the ${requested} role`,
+          details: `Requested at sign-up by ${email ?? "unknown email"}.`,
+          requested_by: profile.id,
+          department_id: profile.department_id,
+          status: "pending",
+        });
+      }
       await supabaseAdmin.from("audit_logs").insert({
         actor_user_id: userId,
         actor_name: profile.full_name,
