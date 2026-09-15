@@ -17,12 +17,19 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardsRouteImport } from './routes/dashboards'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
+import { Route as DashboardHodRouteImport } from './routes/dashboard.hod'
 import { Route as DashboardFacultyRouteImport } from './routes/dashboard.faculty'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardRoleRouteImport } from './routes/dashboard.$role'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as DashboardSuperAdminIndexRouteImport } from './routes/dashboard.super-admin.index'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardHodIndexRouteImport } from './routes/dashboard.hod.index'
+import { Route as DashboardFacultyIndexRouteImport } from './routes/dashboard.faculty.index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard.admin.index'
 import { Route as DashboardStudentSettingsRouteImport } from './routes/dashboard.student.settings'
 import { Route as DashboardStudentResearchRouteImport } from './routes/dashboard.student.research'
 import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
@@ -80,14 +87,29 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSuperAdminRoute = DashboardSuperAdminRouteImport.update({
+  id: '/dashboard/super-admin',
+  path: '/dashboard/super-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardStudentRoute = DashboardStudentRouteImport.update({
   id: '/dashboard/student',
   path: '/dashboard/student',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardHodRoute = DashboardHodRouteImport.update({
+  id: '/dashboard/hod',
+  path: '/dashboard/hod',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardFacultyRoute = DashboardFacultyRouteImport.update({
   id: '/dashboard/faculty',
   path: '/dashboard/faculty',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/dashboard/admin',
+  path: '/dashboard/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoleRoute = DashboardRoleRouteImport.update({
@@ -107,10 +129,31 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DashboardSuperAdminIndexRoute =
+  DashboardSuperAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardSuperAdminRoute,
+  } as any)
 const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardStudentRoute,
+} as any)
+const DashboardHodIndexRoute = DashboardHodIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardHodRoute,
+} as any)
+const DashboardFacultyIndexRoute = DashboardFacultyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardFacultyRoute,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardStudentSettingsRoute =
   DashboardStudentSettingsRouteImport.update({
@@ -213,8 +256,11 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/faculty': typeof DashboardFacultyRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/faculty': typeof DashboardFacultyRouteWithChildren
+  '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
+  '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -232,7 +278,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/dashboard/faculty/': typeof DashboardFacultyIndexRoute
+  '/dashboard/hod/': typeof DashboardHodIndexRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
+  '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -245,7 +295,6 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/faculty': typeof DashboardFacultyRoute
   '/dashboard': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -263,7 +312,11 @@ export interface FileRoutesByTo {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/admin': typeof DashboardAdminIndexRoute
+  '/dashboard/faculty': typeof DashboardFacultyIndexRoute
+  '/dashboard/hod': typeof DashboardHodIndexRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
+  '/dashboard/super-admin': typeof DashboardSuperAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -277,8 +330,11 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
-  '/dashboard/faculty': typeof DashboardFacultyRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/faculty': typeof DashboardFacultyRouteWithChildren
+  '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
+  '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -296,7 +352,11 @@ export interface FileRoutesById {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/dashboard/faculty/': typeof DashboardFacultyIndexRoute
+  '/dashboard/hod/': typeof DashboardHodIndexRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
+  '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -311,8 +371,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/dashboard/admin'
     | '/dashboard/faculty'
+    | '/dashboard/hod'
     | '/dashboard/student'
+    | '/dashboard/super-admin'
     | '/dashboard/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -330,7 +393,11 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/admin/'
+    | '/dashboard/faculty/'
+    | '/dashboard/hod/'
     | '/dashboard/student/'
+    | '/dashboard/super-admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -343,7 +410,6 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
-    | '/dashboard/faculty'
     | '/dashboard'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -361,7 +427,11 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/admin'
+    | '/dashboard/faculty'
+    | '/dashboard/hod'
     | '/dashboard/student'
+    | '/dashboard/super-admin'
   id:
     | '__root__'
     | '/'
@@ -374,8 +444,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/dashboard/admin'
     | '/dashboard/faculty'
+    | '/dashboard/hod'
     | '/dashboard/student'
+    | '/dashboard/super-admin'
     | '/dashboard/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -393,7 +466,11 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/admin/'
+    | '/dashboard/faculty/'
+    | '/dashboard/hod/'
     | '/dashboard/student/'
+    | '/dashboard/super-admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -407,8 +484,11 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DashboardRoleRoute: typeof DashboardRoleRoute
-  DashboardFacultyRoute: typeof DashboardFacultyRoute
+  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
+  DashboardFacultyRoute: typeof DashboardFacultyRouteWithChildren
+  DashboardHodRoute: typeof DashboardHodRouteWithChildren
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
+  DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -472,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/super-admin': {
+      id: '/dashboard/super-admin'
+      path: '/dashboard/super-admin'
+      fullPath: '/dashboard/super-admin'
+      preLoaderRoute: typeof DashboardSuperAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/student': {
       id: '/dashboard/student'
       path: '/dashboard/student'
@@ -479,11 +566,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/hod': {
+      id: '/dashboard/hod'
+      path: '/dashboard/hod'
+      fullPath: '/dashboard/hod'
+      preLoaderRoute: typeof DashboardHodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/faculty': {
       id: '/dashboard/faculty'
       path: '/dashboard/faculty'
       fullPath: '/dashboard/faculty'
       preLoaderRoute: typeof DashboardFacultyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/dashboard/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/$role': {
@@ -507,12 +608,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/super-admin/': {
+      id: '/dashboard/super-admin/'
+      path: '/'
+      fullPath: '/dashboard/super-admin/'
+      preLoaderRoute: typeof DashboardSuperAdminIndexRouteImport
+      parentRoute: typeof DashboardSuperAdminRoute
+    }
     '/dashboard/student/': {
       id: '/dashboard/student/'
       path: '/'
       fullPath: '/dashboard/student/'
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof DashboardStudentRoute
+    }
+    '/dashboard/hod/': {
+      id: '/dashboard/hod/'
+      path: '/'
+      fullPath: '/dashboard/hod/'
+      preLoaderRoute: typeof DashboardHodIndexRouteImport
+      parentRoute: typeof DashboardHodRoute
+    }
+    '/dashboard/faculty/': {
+      id: '/dashboard/faculty/'
+      path: '/'
+      fullPath: '/dashboard/faculty/'
+      preLoaderRoute: typeof DashboardFacultyIndexRouteImport
+      parentRoute: typeof DashboardFacultyRoute
+    }
+    '/dashboard/admin/': {
+      id: '/dashboard/admin/'
+      path: '/'
+      fullPath: '/dashboard/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/student/settings': {
       id: '/dashboard/student/settings'
@@ -629,6 +758,41 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardAdminRouteChildren {
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+}
+
+const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+}
+
+const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
+  DashboardAdminRouteChildren,
+)
+
+interface DashboardFacultyRouteChildren {
+  DashboardFacultyIndexRoute: typeof DashboardFacultyIndexRoute
+}
+
+const DashboardFacultyRouteChildren: DashboardFacultyRouteChildren = {
+  DashboardFacultyIndexRoute: DashboardFacultyIndexRoute,
+}
+
+const DashboardFacultyRouteWithChildren =
+  DashboardFacultyRoute._addFileChildren(DashboardFacultyRouteChildren)
+
+interface DashboardHodRouteChildren {
+  DashboardHodIndexRoute: typeof DashboardHodIndexRoute
+}
+
+const DashboardHodRouteChildren: DashboardHodRouteChildren = {
+  DashboardHodIndexRoute: DashboardHodIndexRoute,
+}
+
+const DashboardHodRouteWithChildren = DashboardHodRoute._addFileChildren(
+  DashboardHodRouteChildren,
+)
+
 interface DashboardStudentRouteChildren {
   DashboardStudentAchievementsRoute: typeof DashboardStudentAchievementsRoute
   DashboardStudentAiRoute: typeof DashboardStudentAiRoute
@@ -668,6 +832,17 @@ const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
 const DashboardStudentRouteWithChildren =
   DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren)
 
+interface DashboardSuperAdminRouteChildren {
+  DashboardSuperAdminIndexRoute: typeof DashboardSuperAdminIndexRoute
+}
+
+const DashboardSuperAdminRouteChildren: DashboardSuperAdminRouteChildren = {
+  DashboardSuperAdminIndexRoute: DashboardSuperAdminIndexRoute,
+}
+
+const DashboardSuperAdminRouteWithChildren =
+  DashboardSuperAdminRoute._addFileChildren(DashboardSuperAdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardsRoute: DashboardsRoute,
@@ -680,8 +855,11 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DashboardRoleRoute: DashboardRoleRoute,
-  DashboardFacultyRoute: DashboardFacultyRoute,
+  DashboardAdminRoute: DashboardAdminRouteWithChildren,
+  DashboardFacultyRoute: DashboardFacultyRouteWithChildren,
+  DashboardHodRoute: DashboardHodRouteWithChildren,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
+  DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
