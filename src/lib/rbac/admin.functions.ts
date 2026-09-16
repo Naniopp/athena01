@@ -163,16 +163,18 @@ export const listManagedUsers = createServerFn({ method: "GET" })
       roleMap.set(row.user_id, list);
     }
 
-    return (profiles ?? []).map((p) => ({
-      userId: p.user_id,
-      name: p.full_name,
-      email: p.email,
-      status: String(p.status),
-      isOwner: !!p.is_owner,
-      approvalStatus: p.approval_status ?? "none",
-      requestedRole: isRole(p.requested_role) ? (p.requested_role as Role) : null,
-      roles: roleMap.get(p.user_id) ?? [],
-    }));
+    return (profiles ?? [])
+      .filter((p): p is typeof p & { user_id: string } => typeof p.user_id === "string")
+      .map((p) => ({
+        userId: p.user_id,
+        name: p.full_name,
+        email: p.email,
+        status: String(p.status),
+        isOwner: !!p.is_owner,
+        approvalStatus: p.approval_status ?? "none",
+        requestedRole: isRole(p.requested_role) ? (p.requested_role as Role) : null,
+        roles: roleMap.get(p.user_id) ?? [],
+      }));
   });
 
 /** Grant or revoke a role. Super admin grants require admins.manage. */
