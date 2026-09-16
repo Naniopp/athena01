@@ -17,6 +17,9 @@ export interface SessionProfile {
   designation: string | null;
   privacy: "public" | "campus" | "private";
   status: string;
+  isOwner: boolean;
+  approvalStatus: "none" | "pending" | "approved" | "rejected" | "revoked";
+  requestedRole: Role | null;
 }
 
 export interface SessionData {
@@ -29,8 +32,9 @@ export interface SessionData {
 
 /**
  * Returns the signed-in user's profile, roles and effective permissions.
- * Creates the profile on first sign-in; the very first account on a fresh
- * install is bootstrapped as super_admin, everyone else defaults to student.
+ * Roles come from the database only. New accounts get student (or faculty when
+ * requested); hod/admin raise an approval request; super_admin is reserved for
+ * the bootstrap institution owner and existing super admins.
  */
 export const getMySession = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
