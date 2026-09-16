@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
@@ -30,6 +31,8 @@ import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.st
 import { Route as DashboardHodIndexRouteImport } from './routes/dashboard.hod.index'
 import { Route as DashboardFacultyIndexRouteImport } from './routes/dashboard.faculty.index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard.admin.index'
+import { Route as DashboardSuperAdminUsersRouteImport } from './routes/dashboard.super-admin.users'
+import { Route as DashboardSuperAdminApprovalsRouteImport } from './routes/dashboard.super-admin.approvals'
 import { Route as DashboardStudentSettingsRouteImport } from './routes/dashboard.student.settings'
 import { Route as DashboardStudentResearchRouteImport } from './routes/dashboard.student.research'
 import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
@@ -50,6 +53,11 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -155,6 +163,18 @@ const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardAdminRoute,
 } as any)
+const DashboardSuperAdminUsersRoute =
+  DashboardSuperAdminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => DashboardSuperAdminRoute,
+  } as any)
+const DashboardSuperAdminApprovalsRoute =
+  DashboardSuperAdminApprovalsRouteImport.update({
+    id: '/approvals',
+    path: '/approvals',
+    getParentRoute: () => DashboardSuperAdminRoute,
+  } as any)
 const DashboardStudentSettingsRoute =
   DashboardStudentSettingsRouteImport.update({
     id: '/settings',
@@ -252,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -278,6 +299,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/super-admin/approvals': typeof DashboardSuperAdminApprovalsRoute
+  '/dashboard/super-admin/users': typeof DashboardSuperAdminUsersRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/faculty/': typeof DashboardFacultyIndexRoute
   '/dashboard/hod/': typeof DashboardHodIndexRoute
@@ -291,6 +314,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -312,6 +336,8 @@ export interface FileRoutesByTo {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/super-admin/approvals': typeof DashboardSuperAdminApprovalsRoute
+  '/dashboard/super-admin/users': typeof DashboardSuperAdminUsersRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/dashboard/faculty': typeof DashboardFacultyIndexRoute
   '/dashboard/hod': typeof DashboardHodIndexRoute
@@ -326,6 +352,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -352,6 +379,8 @@ export interface FileRoutesById {
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/research': typeof DashboardStudentResearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
+  '/dashboard/super-admin/approvals': typeof DashboardSuperAdminApprovalsRoute
+  '/dashboard/super-admin/users': typeof DashboardSuperAdminUsersRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/faculty/': typeof DashboardFacultyIndexRoute
   '/dashboard/hod/': typeof DashboardHodIndexRoute
@@ -367,6 +396,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
+    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -393,6 +423,8 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/super-admin/approvals'
+    | '/dashboard/super-admin/users'
     | '/dashboard/admin/'
     | '/dashboard/faculty/'
     | '/dashboard/hod/'
@@ -406,6 +438,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
+    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -427,6 +460,8 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/super-admin/approvals'
+    | '/dashboard/super-admin/users'
     | '/dashboard/admin'
     | '/dashboard/faculty'
     | '/dashboard/hod'
@@ -440,6 +475,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
+    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -466,6 +502,8 @@ export interface FileRouteTypes {
     | '/dashboard/student/profile'
     | '/dashboard/student/research'
     | '/dashboard/student/settings'
+    | '/dashboard/super-admin/approvals'
+    | '/dashboard/super-admin/users'
     | '/dashboard/admin/'
     | '/dashboard/faculty/'
     | '/dashboard/hod/'
@@ -480,6 +518,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SetupRoute: typeof SetupRoute
   SignupRoute: typeof SignupRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -501,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -642,6 +688,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/admin/'
       preLoaderRoute: typeof DashboardAdminIndexRouteImport
       parentRoute: typeof DashboardAdminRoute
+    }
+    '/dashboard/super-admin/users': {
+      id: '/dashboard/super-admin/users'
+      path: '/users'
+      fullPath: '/dashboard/super-admin/users'
+      preLoaderRoute: typeof DashboardSuperAdminUsersRouteImport
+      parentRoute: typeof DashboardSuperAdminRoute
+    }
+    '/dashboard/super-admin/approvals': {
+      id: '/dashboard/super-admin/approvals'
+      path: '/approvals'
+      fullPath: '/dashboard/super-admin/approvals'
+      preLoaderRoute: typeof DashboardSuperAdminApprovalsRouteImport
+      parentRoute: typeof DashboardSuperAdminRoute
     }
     '/dashboard/student/settings': {
       id: '/dashboard/student/settings'
@@ -833,10 +893,14 @@ const DashboardStudentRouteWithChildren =
   DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren)
 
 interface DashboardSuperAdminRouteChildren {
+  DashboardSuperAdminApprovalsRoute: typeof DashboardSuperAdminApprovalsRoute
+  DashboardSuperAdminUsersRoute: typeof DashboardSuperAdminUsersRoute
   DashboardSuperAdminIndexRoute: typeof DashboardSuperAdminIndexRoute
 }
 
 const DashboardSuperAdminRouteChildren: DashboardSuperAdminRouteChildren = {
+  DashboardSuperAdminApprovalsRoute: DashboardSuperAdminApprovalsRoute,
+  DashboardSuperAdminUsersRoute: DashboardSuperAdminUsersRoute,
   DashboardSuperAdminIndexRoute: DashboardSuperAdminIndexRoute,
 }
 
@@ -850,6 +914,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SetupRoute: SetupRoute,
   SignupRoute: SignupRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:

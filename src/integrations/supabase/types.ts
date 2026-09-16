@@ -24,8 +24,10 @@ export type Database = {
           id: string
           kind: string
           requested_by: string | null
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           status: string
           subject_line: string
+          target_user_id: string | null
           updated_at: string
         }
         Insert: {
@@ -37,8 +39,10 @@ export type Database = {
           id?: string
           kind: string
           requested_by?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           status?: string
           subject_line: string
+          target_user_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -50,8 +54,10 @@ export type Database = {
           id?: string
           kind?: string
           requested_by?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           status?: string
           subject_line?: string
+          target_user_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -878,6 +884,36 @@ export type Database = {
           },
         ]
       }
+      institution: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string | null
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id?: string | null
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string | null
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -1195,6 +1231,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: string
           bio: string | null
           created_at: string
           department_id: string | null
@@ -1204,10 +1241,12 @@ export type Database = {
           id: string
           interests: string[]
           is_demo: boolean
+          is_owner: boolean
           links: Json
           photo_url: string | null
           privacy: Database["public"]["Enums"]["privacy_level"]
           program_id: string | null
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           roll_no: string | null
           section_id: string | null
           skills: string[]
@@ -1217,6 +1256,7 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          approval_status?: string
           bio?: string | null
           created_at?: string
           department_id?: string | null
@@ -1226,10 +1266,12 @@ export type Database = {
           id?: string
           interests?: string[]
           is_demo?: boolean
+          is_owner?: boolean
           links?: Json
           photo_url?: string | null
           privacy?: Database["public"]["Enums"]["privacy_level"]
           program_id?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           roll_no?: string | null
           section_id?: string | null
           skills?: string[]
@@ -1239,6 +1281,7 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          approval_status?: string
           bio?: string | null
           created_at?: string
           department_id?: string | null
@@ -1248,10 +1291,12 @@ export type Database = {
           id?: string
           interests?: string[]
           is_demo?: boolean
+          is_owner?: boolean
           links?: Json
           photo_url?: string | null
           privacy?: Database["public"]["Enums"]["privacy_level"]
           program_id?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           roll_no?: string | null
           section_id?: string | null
           skills?: string[]
@@ -1652,6 +1697,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      athena_needs_setup: { Args: never; Returns: boolean }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean

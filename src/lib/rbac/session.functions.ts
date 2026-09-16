@@ -17,6 +17,9 @@ export interface SessionProfile {
   designation: string | null;
   privacy: "public" | "campus" | "private";
   status: string;
+  isOwner: boolean;
+  approvalStatus: "none" | "pending" | "approved" | "rejected" | "revoked";
+  requestedRole: Role | null;
 }
 
 export interface SessionData {
@@ -29,8 +32,9 @@ export interface SessionData {
 
 /**
  * Returns the signed-in user's profile, roles and effective permissions.
- * Creates the profile on first sign-in; the very first account on a fresh
- * install is bootstrapped as super_admin, everyone else defaults to student.
+ * Roles come from the database only. New accounts get student (or faculty when
+ * requested); hod/admin raise an approval request; super_admin is reserved for
+ * the bootstrap institution owner and existing super admins.
  */
 export const getMySession = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -71,39 +75,49 @@ export const getMySession = createServerFn({ method: "GET" })
     let { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", userId);
 
     if (!roleRows || roleRows.length === 0) {
-      const { count } = await supabaseAdmin
-        .from("user_roles")
-        .select("id", { count: "exact", head: true });
-      const bootstrapRole: Role = (count ?? 0) === 0 ? "super_admin" : "student";
+      // Self-service roles only. super_admin is never self-granted: it belongs
+      // to the bootstrap owner or is assigned by an existing super admin.
       const requested = typeof meta["role"] === "string" ? (meta["role"] as string) : null;
-      const initial: Role =
-        bootstrapRole === "super_admin"
-          ? "super_admin"
-          : requested === "faculty" || requested === "student"
-            ? (requested as Role)
-            : "student";
+      const selfServe = ["student", "faculty"];
+      const privileged = ["hod", "admin"];
+      const initial: Role = requested && selfServe.includes(requested) ? (requested as Role) : "student";
 
       await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: initial });
 
-      // Privileged roles are never self-granted: raise a request for review instead.
-      const privileged = ["hod", "admin", "super_admin"];
-      if (bootstrapRole !== "super_admin" && requested && privileged.includes(requested)) {
+      if (requested && privileged.includes(requested)) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ requested_role: requested as Role, approval_status: "pending" })
+          .eq("user_id", userId);
         await supabaseAdmin.from("approvals").insert({
           kind: "role_request",
+          requested_role: requested as Role,
+          target_user_id: userId,
           subject_line: `${profile.full_name} requested the ${requested} role`,
           details: `Requested at sign-up by ${email ?? "unknown email"}.`,
           requested_by: profile.id,
           department_id: profile.department_id,
           status: "pending",
         });
+      } else if (requested === "super_admin") {
+        // Rejected outright — recorded so the attempt is visible in the audit trail.
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_user_id: userId,
+          actor_name: profile.full_name,
+          action: "role.super_admin_request_denied",
+          entity: "user_roles",
+          entity_id: userId,
+          metadata: { requested },
+        });
       }
+
       await supabaseAdmin.from("audit_logs").insert({
         actor_user_id: userId,
         actor_name: profile.full_name,
-        action: "role.bootstrap",
+        action: "role.assigned_on_signup",
         entity: "user_roles",
         entity_id: userId,
-        metadata: { role: initial },
+        metadata: { role: initial, requested },
       });
       roleRows = [{ role: initial }];
     }
@@ -138,6 +152,9 @@ export const getMySession = createServerFn({ method: "GET" })
         designation: profile.designation,
         privacy: profile.privacy as SessionProfile["privacy"],
         status: profile.status,
+        isOwner: !!profile.is_owner,
+        approvalStatus: (profile.approval_status ?? "none") as SessionProfile["approvalStatus"],
+        requestedRole: (profile.requested_role as Role | null) ?? null,
       },
       roles,
       role: primaryRole(roles),
