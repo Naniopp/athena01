@@ -224,10 +224,11 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
               </div>
               <div className="flex-1">
                 <div className="text-lg font-semibold text-foreground">{r.title}</div>
+                <div className="mt-0.5 text-sm font-medium text-[#F97316]">{r.cta}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{r.desc}</div>
                 {r.approval && (
                   <div className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                    Needs approval — you start as a student until a super admin confirms it
+                    Reviewed by a super admin before the role is granted
                   </div>
                 )}
               </div>
@@ -239,6 +240,18 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-4 flex items-start gap-3 rounded-3xl border border-dashed border-border bg-[#FAFAFA] p-5">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-foreground">Super Admin</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Reserved for the ATHENA institution owner and authorised system administrators. It cannot be requested here.
+          </p>
+        </div>
       </div>
 
       <div className="mx-auto mt-10 flex max-w-md flex-col items-stretch gap-3">
