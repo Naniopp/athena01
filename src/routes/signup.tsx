@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
 import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
+import { getSetupState } from "@/lib/rbac/bootstrap.functions";
 
 
 export const Route = createFileRoute("/signup")({
