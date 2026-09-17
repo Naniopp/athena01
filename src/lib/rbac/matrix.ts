@@ -139,12 +139,6 @@ export const ROLE_NAV: Record<Role, NavItem[]> = {
     { label: "System", to: "/dashboard/super-admin", icon: "server" },
     { label: "Users & Roles", to: "/dashboard/super-admin/users", icon: "users", permission: "users.view" },
     { label: "Approvals", to: "/dashboard/super-admin/approvals", icon: "check-check", permission: "approvals.decide" },
-    { label: "Institution", to: "/dashboard/super-admin/institution", icon: "building", permission: "system.settings" },
-    { label: "Roles & Permissions", to: "/dashboard/super-admin/roles", icon: "key", permission: "roles.manage" },
-    { label: "Administrators", to: "/dashboard/super-admin/admins", icon: "user-cog", permission: "admins.manage" },
-    { label: "Security", to: "/dashboard/super-admin/security", icon: "shield", permission: "security.manage" },
-    { label: "Audit Logs", to: "/dashboard/super-admin/audit", icon: "scroll", permission: "audit.view_all" },
-    { label: "Settings", to: "/dashboard/super-admin/settings", icon: "settings" },
   ],
 };
 
