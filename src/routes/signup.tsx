@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useMemo, useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
@@ -27,11 +27,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
 import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
+import { getSetupState } from "@/lib/rbac/bootstrap.functions";
 
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
     typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
+  beforeLoad: async () => {
+    // Nothing to join until the institution owner has completed first-run setup.
+    const { needsSetup } = await getSetupState();
+    if (needsSetup) throw redirect({ to: "/setup" });
+  },
   head: () => ({
     meta: [
       { title: "Get started — ATHENA" },
@@ -43,14 +49,13 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-type Role = "student" | "faculty" | "hod" | "admin" | "super_admin";
+type Role = "student" | "faculty" | "hod" | "admin";
 
-const ROLES: { id: Role; title: string; desc: string; icon: React.ReactNode; approval?: boolean }[] = [
-  { id: "student", title: "Student", desc: "Follow your campus feed, communities, events and academics.", icon: <GraduationCap className="h-6 w-6" /> },
-  { id: "faculty", title: "Faculty", desc: "Teach, mentor and track your classes and students.", icon: <Presentation className="h-6 w-6" /> },
-  { id: "hod", title: "Head of Department", desc: "Lead faculty, subjects, timetable and approvals.", icon: <Users className="h-6 w-6" />, approval: true },
-  { id: "admin", title: "Administrator", desc: "Oversee users, departments, moderation and reports.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
-  { id: "super_admin", title: "Super Admin", desc: "Institution settings, roles, security and audit.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
+const ROLES: { id: Role; title: string; cta: string; desc: string; icon: React.ReactNode; approval?: boolean }[] = [
+  { id: "student", title: "Student", cta: "Join as Student", desc: "Access your campus feed, communities, academics and events.", icon: <GraduationCap className="h-6 w-6" /> },
+  { id: "faculty", title: "Faculty", cta: "Join as Faculty", desc: "Teach, mentor and manage your assigned classes.", icon: <Presentation className="h-6 w-6" /> },
+  { id: "hod", title: "Head of Department", cta: "Request HOD Access", desc: "Manage your department, faculty, subjects and academic operations.", icon: <Users className="h-6 w-6" />, approval: true },
+  { id: "admin", title: "Administrator", cta: "Request Administrator Access", desc: "Help manage users, moderation and campus operations.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
 ];
 
 function TopNav() {
@@ -225,10 +230,11 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
               </div>
               <div className="flex-1">
                 <div className="text-lg font-semibold text-foreground">{r.title}</div>
+                <div className="mt-0.5 text-sm font-medium text-[#F97316]">{r.cta}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{r.desc}</div>
                 {r.approval && (
                   <div className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                    Needs approval — you start as a student until a super admin confirms it
+                    Reviewed by a super admin before the role is granted
                   </div>
                 )}
               </div>
@@ -240,6 +246,18 @@ function StepRole({ role, onSelect, onContinue, onDirect, onGoogle, oauthError }
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-4 flex items-start gap-3 rounded-3xl border border-dashed border-border bg-[#FAFAFA] p-5">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-muted text-muted-foreground">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-foreground">Super Admin</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Reserved for the ATHENA institution owner and authorised system administrators. It cannot be requested here.
+          </p>
+        </div>
       </div>
 
       <div className="mx-auto mt-10 flex max-w-md flex-col items-stretch gap-3">

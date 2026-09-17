@@ -7,6 +7,7 @@ import { lovable } from "@/integrations/lovable";
 import { OtpVerify } from "@/components/OtpVerify";
 import { toast } from "sonner";
 import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
+import { getSetupState } from "@/lib/rbac/bootstrap.functions";
 
 
 export const Route = createFileRoute("/login")({
@@ -14,10 +15,13 @@ export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
     typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
   beforeLoad: async ({ search }) => {
+    const { needsSetup } = await getSetupState();
+    if (needsSetup) throw redirect({ to: "/setup" });
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       if (search.next) throw redirect({ href: search.next });
-      throw redirect({ to: "/dashboard/student" });
+      // The database decides which workspace this account lands in.
+      throw redirect({ to: "/dashboard" });
     }
   },
 
