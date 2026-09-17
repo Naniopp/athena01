@@ -43,14 +43,13 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-type Role = "student" | "faculty" | "hod" | "admin" | "super_admin";
+type Role = "student" | "faculty" | "hod" | "admin";
 
-const ROLES: { id: Role; title: string; desc: string; icon: React.ReactNode; approval?: boolean }[] = [
-  { id: "student", title: "Student", desc: "Follow your campus feed, communities, events and academics.", icon: <GraduationCap className="h-6 w-6" /> },
-  { id: "faculty", title: "Faculty", desc: "Teach, mentor and track your classes and students.", icon: <Presentation className="h-6 w-6" /> },
-  { id: "hod", title: "Head of Department", desc: "Lead faculty, subjects, timetable and approvals.", icon: <Users className="h-6 w-6" />, approval: true },
-  { id: "admin", title: "Administrator", desc: "Oversee users, departments, moderation and reports.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
-  { id: "super_admin", title: "Super Admin", desc: "Institution settings, roles, security and audit.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
+const ROLES: { id: Role; title: string; cta: string; desc: string; icon: React.ReactNode; approval?: boolean }[] = [
+  { id: "student", title: "Student", cta: "Join as Student", desc: "Access your campus feed, communities, academics and events.", icon: <GraduationCap className="h-6 w-6" /> },
+  { id: "faculty", title: "Faculty", cta: "Join as Faculty", desc: "Teach, mentor and manage your assigned classes.", icon: <Presentation className="h-6 w-6" /> },
+  { id: "hod", title: "Head of Department", cta: "Request HOD Access", desc: "Manage your department, faculty, subjects and academic operations.", icon: <Users className="h-6 w-6" />, approval: true },
+  { id: "admin", title: "Administrator", cta: "Request Administrator Access", desc: "Help manage users, moderation and campus operations.", icon: <ShieldCheck className="h-6 w-6" />, approval: true },
 ];
 
 function TopNav() {
