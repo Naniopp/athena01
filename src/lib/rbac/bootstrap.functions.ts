@@ -76,7 +76,13 @@ export const createOwnerAccount = createServerFn({ method: "POST" })
       user_metadata: { full_name: data.ownerName, role: "super_admin", owner: true },
     });
     if (createError || !created.user) {
-      throw new Error(createError?.message ?? "Could not create the owner account.");
+      const msg = createError?.message ?? "";
+      if (/already been registered|already exists|duplicate/i.test(msg)) {
+        throw new Error(
+          "That email already has an ATHENA account. Use a different email for the owner account, or sign in with the existing one and set it up from there.",
+        );
+      }
+      throw new Error(msg || "Could not create the owner account.");
     }
     const userId = created.user.id;
 
