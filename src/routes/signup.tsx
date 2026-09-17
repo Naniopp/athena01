@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useMemo, useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
@@ -32,6 +32,11 @@ import { friendlyAuthError, isValidEmail } from "@/lib/auth-errors";
 export const Route = createFileRoute("/signup")({
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
     typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
+  beforeLoad: async () => {
+    // Nothing to join until the institution owner has completed first-run setup.
+    const { needsSetup } = await getSetupState();
+    if (needsSetup) throw redirect({ to: "/setup" });
+  },
   head: () => ({
     meta: [
       { title: "Get started — ATHENA" },
