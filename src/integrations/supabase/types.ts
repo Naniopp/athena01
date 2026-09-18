@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_profiles: {
+        Row: {
+          admin_department: string | null
+          created_at: string
+          designation: string | null
+          employee_id: string | null
+          experience_years: number | null
+          institution: string | null
+          profile_id: string
+          reason: string | null
+          requested_areas: string[]
+          responsibilities: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_department?: string | null
+          created_at?: string
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          institution?: string | null
+          profile_id: string
+          reason?: string | null
+          requested_areas?: string[]
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_department?: string | null
+          created_at?: string
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          institution?: string | null
+          profile_id?: string
+          reason?: string | null
+          requested_areas?: string[]
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approvals: {
         Row: {
           created_at: string
@@ -851,6 +901,78 @@ export type Database = {
           },
         ]
       }
+      faculty_profiles: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          designation: string | null
+          employee_id: string | null
+          experience_years: number | null
+          expertise: string[]
+          joining_year: number | null
+          office_hours: string | null
+          office_room: string | null
+          profile_id: string
+          programs: string[]
+          qualification: string | null
+          research_interests: string[]
+          specialisation: string | null
+          subjects: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          expertise?: string[]
+          joining_year?: number | null
+          office_hours?: string | null
+          office_room?: string | null
+          profile_id: string
+          programs?: string[]
+          qualification?: string | null
+          research_interests?: string[]
+          specialisation?: string | null
+          subjects?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          expertise?: string[]
+          joining_year?: number | null
+          office_hours?: string | null
+          office_room?: string | null
+          profile_id?: string
+          programs?: string[]
+          qualification?: string | null
+          research_interests?: string[]
+          specialisation?: string | null
+          subjects?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faculty_profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faculty_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -879,6 +1001,66 @@ export type Database = {
             foreignKeyName: "follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hod_profiles: {
+        Row: {
+          created_at: string
+          department_code: string | null
+          department_id: string | null
+          designation: string | null
+          employee_id: string | null
+          experience_years: number | null
+          joining_year: number | null
+          profile_id: string
+          programs: string[]
+          qualification: string | null
+          responsibilities: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_code?: string | null
+          department_id?: string | null
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          joining_year?: number | null
+          profile_id: string
+          programs?: string[]
+          qualification?: string | null
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_code?: string | null
+          department_id?: string | null
+          designation?: string | null
+          employee_id?: string | null
+          experience_years?: number | null
+          joining_year?: number | null
+          profile_id?: string
+          programs?: string[]
+          qualification?: string | null
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hod_profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hod_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1243,12 +1425,15 @@ export type Database = {
           is_demo: boolean
           is_owner: boolean
           links: Json
+          onboarding_status: string
+          phone: string | null
           photo_url: string | null
           privacy: Database["public"]["Enums"]["privacy_level"]
           program_id: string | null
           requested_role: Database["public"]["Enums"]["app_role"] | null
           roll_no: string | null
           section_id: string | null
+          setup_data: Json
           skills: string[]
           status: Database["public"]["Enums"]["account_status"]
           updated_at: string
@@ -1268,12 +1453,15 @@ export type Database = {
           is_demo?: boolean
           is_owner?: boolean
           links?: Json
+          onboarding_status?: string
+          phone?: string | null
           photo_url?: string | null
           privacy?: Database["public"]["Enums"]["privacy_level"]
           program_id?: string | null
           requested_role?: Database["public"]["Enums"]["app_role"] | null
           roll_no?: string | null
           section_id?: string | null
+          setup_data?: Json
           skills?: string[]
           status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
@@ -1293,12 +1481,15 @@ export type Database = {
           is_demo?: boolean
           is_owner?: boolean
           links?: Json
+          onboarding_status?: string
+          phone?: string | null
           photo_url?: string | null
           privacy?: Database["public"]["Enums"]["privacy_level"]
           program_id?: string | null
           requested_role?: Database["public"]["Enums"]["app_role"] | null
           roll_no?: string | null
           section_id?: string | null
+          setup_data?: Json
           skills?: string[]
           status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
@@ -1465,6 +1656,85 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sections_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_profiles: {
+        Row: {
+          academic_year: number | null
+          admission_year: number | null
+          created_at: string
+          date_of_birth: string | null
+          department_id: string | null
+          gender: string | null
+          hobbies: string[]
+          institution: string | null
+          interests: string[]
+          profile_id: string
+          program_id: string | null
+          roll_no: string | null
+          section: string | null
+          semester: number | null
+          skills: string[]
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: number | null
+          admission_year?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          department_id?: string | null
+          gender?: string | null
+          hobbies?: string[]
+          institution?: string | null
+          interests?: string[]
+          profile_id: string
+          program_id?: string | null
+          roll_no?: string | null
+          section?: string | null
+          semester?: number | null
+          skills?: string[]
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number | null
+          admission_year?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          department_id?: string | null
+          gender?: string | null
+          hobbies?: string[]
+          institution?: string | null
+          interests?: string[]
+          profile_id?: string
+          program_id?: string | null
+          roll_no?: string | null
+          section?: string | null
+          semester?: number | null
+          skills?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_profiles_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
