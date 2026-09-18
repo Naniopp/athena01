@@ -10,6 +10,9 @@ import type { Role } from "./matrix";
 
 export type OnboardingStatus = "not_started" | "in_progress" | "completed";
 
+/** Plain JSON-safe answers collected during setup. */
+export type SetupValues = Record<string, string | number | boolean | null | string[]>;
+
 export interface OnboardingState {
   profileId: string;
   role: Role;
@@ -20,7 +23,7 @@ export interface OnboardingState {
   approvalStatus: "none" | "pending" | "approved" | "rejected" | "revoked";
   requestedRole: Role | null;
   isOwner: boolean;
-  setupData: Record<string, unknown>;
+  setupData: SetupValues;
   /** Where this account belongs right now. */
   redirectTo: string;
 }
@@ -93,7 +96,7 @@ async function loadState(context: {
     approvalStatus,
     requestedRole,
     isOwner: !!profile.is_owner,
-    setupData: (profile.setup_data ?? {}) as Record<string, unknown>,
+    setupData: (profile.setup_data ?? {}) as SetupValues,
     redirectTo: destination(role, onboardingStatus, approvalStatus, requestedRole),
   };
 }
@@ -104,7 +107,7 @@ export const getOnboardingState = createServerFn({ method: "GET" })
 
 export interface SaveStepInput {
   /** Partial answers merged into the saved draft. */
-  values: Record<string, unknown>;
+  values: SetupValues;
   step?: number;
 }
 
@@ -112,12 +115,12 @@ export interface SaveStepInput {
 export const saveOnboardingStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: SaveStepInput) => ({
-    values: (data?.values ?? {}) as Record<string, unknown>,
+    values: (data?.values ?? {}) as SetupValues,
     step: typeof data?.step === "number" ? data.step : 0,
   }))
   .handler(async ({ data, context }): Promise<OnboardingState> => {
     const state = await loadState(context);
-    const merged = { ...state.setupData, ...data.values, __step: data.step };
+    const merged: SetupValues = { ...state.setupData, ...data.values, __step: data.step };
     const patch: Record<string, unknown> = {
       setup_data: merged,
       onboarding_status: state.onboardingStatus === "completed" ? "completed" : "in_progress",
@@ -128,7 +131,7 @@ export const saveOnboardingStep = createServerFn({ method: "POST" })
     if (typeof data.values["phone"] === "string") patch["phone"] = data.values["phone"];
     if (typeof data.values["bio"] === "string") patch["bio"] = data.values["bio"];
 
-    const { error } = await context.supabase.from("profiles").update(patch).eq("id", state.profileId);
+    const { error } = await context.supabase.from("profiles").update(patch as never).eq("id", state.profileId);
     if (error) throw new Error(error.message);
     return loadState(context);
   });
@@ -156,12 +159,12 @@ function list(v: unknown): string[] {
  */
 export const completeOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { values: Record<string, unknown> }) => ({
-    values: (data?.values ?? {}) as Record<string, unknown>,
+  .inputValidator((data: { values: SetupValues }) => ({
+    values: (data?.values ?? {}) as SetupValues,
   }))
   .handler(async ({ data, context }): Promise<OnboardingState> => {
     const state = await loadState(context);
-    const v = { ...state.setupData, ...data.values } as Record<string, unknown>;
+    const v = { ...state.setupData, ...data.values } as SetupValues;
     const { supabase } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -186,7 +189,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     if (str(v["designation"])) profilePatch["designation"] = str(v["designation"]);
     if (num(v["academicYear"])) profilePatch["year"] = num(v["academicYear"]);
 
-    const { error: pErr } = await supabase.from("profiles").update(profilePatch).eq("id", state.profileId);
+    const { error: pErr } = await supabase.from("profiles").update(profilePatch as never).eq("id", state.profileId);
     if (pErr) throw new Error(pErr.message);
 
     const base = { profile_id: state.profileId };
@@ -296,8 +299,8 @@ export const completeOnboarding = createServerFn({ method: "POST" })
 /** Institution + academic structure, super admin only. */
 export const saveInstitutionSetup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { values: Record<string, unknown> }) => ({
-    values: (data?.values ?? {}) as Record<string, unknown>,
+  .inputValidator((data: { values: SetupValues }) => ({
+    values: (data?.values ?? {}) as SetupValues,
   }))
   .handler(async ({ data, context }) => {
     const { data: allowed } = await context.supabase.rpc("has_permission", {
@@ -331,7 +334,7 @@ export const saveInstitutionSetup = createServerFn({ method: "POST" })
       const patch: Record<string, unknown> = { settings };
       if (str(v["name"])) patch["name"] = str(v["name"]);
       if (str(v["code"])) patch["code"] = str(v["code"])?.toUpperCase();
-      await supabaseAdmin.from("institution").update(patch).eq("id", inst.id);
+      await supabaseAdmin.from("institution").update(patch as never).eq("id", inst.id);
     }
     return { ok: true };
   });
