@@ -10,14 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardsRouteImport } from './routes/dashboards'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SetupIndexRouteImport } from './routes/setup.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as SetupRoleRouteImport } from './routes/setup.$role'
 import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
 import { Route as DashboardHodRouteImport } from './routes/dashboard.hod'
@@ -55,11 +56,6 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -90,9 +86,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupIndexRoute = SetupIndexRouteImport.update({
+  id: '/setup/',
+  path: '/setup/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoleRoute = SetupRoleRouteImport.update({
+  id: '/setup/$role',
+  path: '/setup/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSuperAdminRoute = DashboardSuperAdminRouteImport.update({
@@ -272,7 +278,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -282,7 +287,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/setup/': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
@@ -314,12 +321,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/setup': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
@@ -352,7 +360,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -362,7 +369,9 @@ export interface FileRoutesById {
   '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/setup/': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/student/achievements': typeof DashboardStudentAchievementsRoute
@@ -396,7 +405,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
-    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -406,7 +414,9 @@ export interface FileRouteTypes {
     | '/dashboard/hod'
     | '/dashboard/student'
     | '/dashboard/super-admin'
+    | '/setup/$role'
     | '/dashboard/'
+    | '/setup/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/achievements'
@@ -438,12 +448,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
-    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/setup/$role'
     | '/dashboard'
+    | '/setup'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/achievements'
@@ -475,7 +486,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/reset-password'
-    | '/setup'
     | '/signup'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -485,7 +495,9 @@ export interface FileRouteTypes {
     | '/dashboard/hod'
     | '/dashboard/student'
     | '/dashboard/super-admin'
+    | '/setup/$role'
     | '/dashboard/'
+    | '/setup/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/student/achievements'
@@ -518,7 +530,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  SetupRoute: typeof SetupRoute
   SignupRoute: typeof SignupRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -528,7 +539,9 @@ export interface RootRouteChildren {
   DashboardHodRoute: typeof DashboardHodRouteWithChildren
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
+  SetupRoleRoute: typeof SetupRoleRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  SetupIndexRoute: typeof SetupIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -540,13 +553,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -591,11 +597,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setup/': {
+      id: '/setup/'
+      path: '/setup'
+      fullPath: '/setup/'
+      preLoaderRoute: typeof SetupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup/$role': {
+      id: '/setup/$role'
+      path: '/setup/$role'
+      fullPath: '/setup/$role'
+      preLoaderRoute: typeof SetupRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/super-admin': {
@@ -914,7 +934,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  SetupRoute: SetupRoute,
   SignupRoute: SignupRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -925,7 +944,9 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardHodRoute: DashboardHodRouteWithChildren,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
+  SetupRoleRoute: SetupRoleRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  SetupIndexRoute: SetupIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
