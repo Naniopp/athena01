@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
   Users,
@@ -11,10 +11,7 @@ import {
   Mail,
   Lock,
   User,
-  Building2,
-  IdCard,
-  BookOpen,
-  CalendarDays,
+  Phone,
   Eye,
   EyeOff,
   Sparkles,
@@ -36,7 +33,7 @@ export const Route = createFileRoute("/signup")({
   beforeLoad: async () => {
     // Nothing to join until the institution owner has completed first-run setup.
     const { needsSetup } = await getSetupState();
-    if (needsSetup) throw redirect({ to: "/setup" });
+    if (needsSetup) throw redirect({ to: "/setup/" });
   },
   head: () => ({
     meta: [
@@ -312,21 +309,11 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
   const [showPw2, setShowPw2] = useState(false);
   const [agree, setAgree] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [university, setUniversity] = useState("Northbridge University");
-  const [idNumber, setIdNumber] = useState("");
-  const [department, setDepartment] = useState("Computer Science");
-  const [semester, setSemester] = useState("Semester 1");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const idLabel = useMemo(() => {
-    if (role === "student") return "Student ID";
-    if (role === "faculty") return "Faculty ID";
-    if (role === "hod") return "Faculty ID";
-    return "Staff ID";
-  }, [role]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -351,14 +338,8 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
       setError("Please accept the Terms of Service and Privacy Policy to continue.");
       return;
     }
-    const metadata = {
-      role,
-      full_name: fullName,
-      university,
-      id_number: idNumber,
-      department,
-      semester,
-    };
+    // Only the essentials here — everything else is collected in setup.
+    const metadata = { role, full_name: fullName, phone };
     setSubmitting(true);
     const { error } = direct
       ? await supabase.auth.signUp({
@@ -385,16 +366,15 @@ function StepDetails({ role, email, setEmail, direct, onBack, onFinish }: { role
 
         <div className="mt-4">
           <h2 className="text-3xl font-semibold tracking-tight text-foreground">Create Your Account</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Tell us a few details to set up your {role} account.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Just the basics for now. Next you'll complete your {role === "admin" ? "administrator" : role} profile.
+          </p>
         </div>
 
         <form className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
           <Field label="Full Name" icon={<User className="h-4 w-4" />} placeholder="Alex Johnson" value={fullName} onChange={setFullName} />
           <Field label="University Email" icon={<Mail className="h-4 w-4" />} placeholder="alex@university.edu" value={email} onChange={direct ? setEmail : () => {}} type="email" readOnly={!direct} />
-          <SelectField label="University" icon={<Building2 className="h-4 w-4" />} options={["Northbridge University", "Riverside Institute", "Metro College"]} value={university} onChange={setUniversity} />
-          <Field label={idLabel} icon={<IdCard className="h-4 w-4" />} placeholder="NU23CS1001" value={idNumber} onChange={setIdNumber} />
-          <SelectField label="Department" icon={<BookOpen className="h-4 w-4" />} options={["Computer Science", "Mechanical", "Business", "Design"]} value={department} onChange={setDepartment} />
-          <SelectField label="Year / Semester" icon={<CalendarDays className="h-4 w-4" />} options={["Semester 1", "Semester 3", "Semester 5", "Semester 7"]} value={semester} onChange={setSemester} />
+          <Field label="Phone (optional)" icon={<Phone className="h-4 w-4" />} placeholder="+91 98765 43210" value={phone} onChange={setPhone} />
 
           <PasswordField label="Password" show={showPw} onToggle={() => setShowPw((s) => !s)} value={password} onChange={setPassword} />
           <PasswordField label="Confirm Password" show={showPw2} onToggle={() => setShowPw2((s) => !s)} value={password2} onChange={setPassword2} />
@@ -472,22 +452,6 @@ function Field({ label, icon, placeholder, type = "text", value, onChange, readO
           placeholder={placeholder}
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
-      </div>
-    </div>
-  );
-}
-
-function SelectField({ label, icon, options, value, onChange }: { label: string; icon: React.ReactNode; options: string[]; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-3 focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/20 transition">
-        <span className="text-muted-foreground">{icon}</span>
-        <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full bg-transparent text-sm outline-none">
-          {options.map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
       </div>
     </div>
   );
