@@ -8,7 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { createOwnerAccount, getSetupState } from "@/lib/rbac/bootstrap.functions";
 
-export const Route = createFileRoute("/setup")({
+export const Route = createFileRoute("/setup/")({
   ssr: false,
   head: () => ({
     meta: [
