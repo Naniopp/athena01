@@ -18,6 +18,7 @@ import { Route as DashboardsRouteImport } from './routes/dashboards'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SetupIndexRouteImport } from './routes/setup.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as SetupRoleRouteImport } from './routes/setup.$role'
 import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
 import { Route as DashboardHodRouteImport } from './routes/dashboard.hod'
@@ -93,6 +94,11 @@ const SetupIndexRoute = SetupIndexRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoleRoute = SetupRoleRouteImport.update({
+  id: '/setup/$role',
+  path: '/setup/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSuperAdminRoute = DashboardSuperAdminRouteImport.update({
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/setup/': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -318,6 +325,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard/$role': typeof DashboardRoleRoute
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard': typeof DashboardIndexRoute
   '/setup': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -361,6 +369,7 @@ export interface FileRoutesById {
   '/dashboard/hod': typeof DashboardHodRouteWithChildren
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
+  '/setup/$role': typeof SetupRoleRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/setup/': typeof SetupIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -405,6 +414,7 @@ export interface FileRouteTypes {
     | '/dashboard/hod'
     | '/dashboard/student'
     | '/dashboard/super-admin'
+    | '/setup/$role'
     | '/dashboard/'
     | '/setup/'
     | '/.lovable/oauth/consent'
@@ -442,6 +452,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard/$role'
+    | '/setup/$role'
     | '/dashboard'
     | '/setup'
     | '/.lovable/oauth/consent'
@@ -484,6 +495,7 @@ export interface FileRouteTypes {
     | '/dashboard/hod'
     | '/dashboard/student'
     | '/dashboard/super-admin'
+    | '/setup/$role'
     | '/dashboard/'
     | '/setup/'
     | '/.lovable/oauth/consent'
@@ -527,6 +539,7 @@ export interface RootRouteChildren {
   DashboardHodRoute: typeof DashboardHodRouteWithChildren
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
+  SetupRoleRoute: typeof SetupRoleRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   SetupIndexRoute: typeof SetupIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -596,6 +609,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup/$role': {
+      id: '/setup/$role'
+      path: '/setup/$role'
+      fullPath: '/setup/$role'
+      preLoaderRoute: typeof SetupRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/super-admin': {
@@ -924,6 +944,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardHodRoute: DashboardHodRouteWithChildren,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
+  SetupRoleRoute: SetupRoleRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   SetupIndexRoute: SetupIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
