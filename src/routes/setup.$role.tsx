@@ -467,7 +467,7 @@ function SetupRolePage() {
     }
   }
 
-  const pct = steps.length ? Math.round(((step + (current ? 0 : 1)) / steps.length) * 100) : 0;
+  const pct = steps.length ? Math.round(((step + 1) / steps.length) * 100) : 0;
 
   return (
     <div className="relative min-h-screen bg-background">
