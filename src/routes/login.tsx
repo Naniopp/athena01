@@ -16,7 +16,7 @@ export const Route = createFileRoute("/login")({
     typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? { next: s.next } : {},
   beforeLoad: async ({ search }) => {
     const { needsSetup } = await getSetupState();
-    if (needsSetup) throw redirect({ to: "/setup/" });
+    if (needsSetup) throw redirect({ to: "/setup" });
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       if (search.next) throw redirect({ href: search.next });
