@@ -28,6 +28,8 @@ export interface OnboardingState {
   setupData: SetupValues;
   /** Where this account belongs right now. */
   redirectTo: string;
+  /** The dashboard for the role the account currently holds. */
+  workspaceTo: string;
 }
 
 export const SETUP_SLUG: Record<Role, string> = {
@@ -162,6 +164,7 @@ async function loadState(context: {
     setupRole: setupRoleFor(role, requestedRole, approvalStatus),
     setupData: (profile.setup_data ?? {}) as SetupValues,
     redirectTo: destination(role, onboardingStatus, approvalStatus, requestedRole),
+    workspaceTo: ROLE_HOME[role],
   };
 }
 

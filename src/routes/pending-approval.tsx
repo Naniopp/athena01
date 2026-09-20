@@ -93,7 +93,7 @@ function PendingApprovalPage() {
 
             <div className="mt-7 flex flex-col items-stretch gap-3">
               <button
-                onClick={() => navigate({ href: state.data!.redirectTo })}
+                onClick={() => navigate({ href: state.data!.workspaceTo })}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:brightness-105"
               >
                 Go to my workspace <ArrowRight className="h-4 w-4" />
