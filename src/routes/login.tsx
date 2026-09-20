@@ -73,7 +73,7 @@ function LoginPage() {
 
   const goNext = () => {
     if (next) window.location.assign(next);
-    else navigate({ to: "/dashboards" });
+    else navigate({ to: "/dashboard" });
   };
 
   async function handleSubmit(e: React.FormEvent) {
