@@ -64,20 +64,71 @@ function destination(
   return ROLE_HOME[role];
 }
 
+const PROFILE_COLUMNS =
+  "id, full_name, email, phone, onboarding_status, setup_data, approval_status, requested_role, is_owner";
+
 async function loadState(context: {
   supabase: import("@supabase/supabase-js").SupabaseClient;
   userId: string;
+  claims?: unknown;
 }): Promise<OnboardingState> {
   const { supabase, userId } = context;
-  const { data: profile, error } = await supabase
+  const claims = (context.claims ?? {}) as { email?: string; user_metadata?: Record<string, unknown> };
+  const meta = claims.user_metadata ?? {};
+  const email = claims.email ?? null;
+
+  let { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, email, phone, onboarding_status, setup_data, approval_status, requested_role, is_owner")
+    .select(PROFILE_COLUMNS)
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!profile) throw new Error("Profile not found. Please sign in again.");
 
-  const { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // First visit after sign-up: create the account's profile row.
+  if (!profile) {
+    const fullName =
+      (typeof meta["full_name"] === "string" && meta["full_name"]) ||
+      (typeof meta["name"] === "string" && meta["name"]) ||
+      email?.split("@")[0] ||
+      "New member";
+    const { data: created, error: insertError } = await supabaseAdmin
+      .from("profiles")
+      .insert({
+        user_id: userId,
+        full_name: fullName,
+        email,
+        phone: typeof meta["phone"] === "string" ? meta["phone"] : null,
+        photo_url: typeof meta["avatar_url"] === "string" ? meta["avatar_url"] : null,
+        onboarding_status: "not_started",
+      })
+      .select(PROFILE_COLUMNS)
+      .single();
+    if (insertError) throw new Error(insertError.message);
+    profile = created;
+  }
+
+  let { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+
+  // No role yet: student/faculty are self-serve, hod/admin start as student
+  // and record the request their setup will submit for approval.
+  if (!roleRows || roleRows.length === 0) {
+    const requested = typeof meta["role"] === "string" ? (meta["role"] as string) : null;
+    const initial: Role = requested === "faculty" ? "faculty" : "student";
+    await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: initial });
+    if (requested === "hod" || requested === "admin") {
+      const { data: updated } = await supabaseAdmin
+        .from("profiles")
+        .update({ requested_role: requested })
+        .eq("id", profile.id)
+        .select(PROFILE_COLUMNS)
+        .single();
+      if (updated) profile = updated;
+    }
+    roleRows = [{ role: initial }];
+  }
+
   const roles = (roleRows ?? []).map((r) => r.role as Role);
   const rank: Role[] = ["super_admin", "admin", "hod", "faculty", "student"];
   const role = rank.find((r) => roles.includes(r)) ?? "student";
