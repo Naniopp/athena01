@@ -13,7 +13,6 @@ import {
 } from "@/lib/campus/seed";
 import { Btn, Skeleton, timeAgo } from "./ui";
 import { SessionBanner } from "./SessionBanner";
-import { ProfileWizard } from "./ProfileWizard";
 import { signOutEverywhere } from "@/lib/auth-session";
 
 const R = "/dashboard/student";
@@ -300,7 +299,6 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-background">
       <SessionBanner />
-      <ProfileWizard />
 
       {offline && (
         <div className="flex items-center justify-center gap-2 bg-foreground px-4 py-1.5 text-xs text-background">

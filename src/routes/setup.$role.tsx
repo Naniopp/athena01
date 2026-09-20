@@ -339,7 +339,7 @@ function SetupRolePage() {
     retry: false,
   });
 
-  const sessionRole = state.data?.role;
+  const sessionRole = state.data?.setupRole;
   const steps = useMemo<StepDef[]>(() => (sessionRole ? STEPS[sessionRole] : []), [sessionRole]);
 
   const [step, setStep] = useState(0);
@@ -355,7 +355,7 @@ function SetupRolePage() {
       navigate({ href: state.data.redirectTo });
       return;
     }
-    const correct = SETUP_SLUG[state.data.role];
+    const correct = SETUP_SLUG[state.data.setupRole];
     if (slug !== correct) navigate({ to: "/setup/$role", params: { role: correct } });
   }, [state.data, slug, navigate]);
 
@@ -467,7 +467,7 @@ function SetupRolePage() {
     }
   }
 
-  const pct = steps.length ? Math.round(((step + (current ? 0 : 1)) / steps.length) * 100) : 0;
+  const pct = steps.length ? Math.round(((step + 1) / steps.length) * 100) : 0;
 
   return (
     <div className="relative min-h-screen bg-background">

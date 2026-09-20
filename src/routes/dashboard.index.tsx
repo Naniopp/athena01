@@ -1,11 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { getMySession } from "@/lib/rbac/session.functions";
-import { ROLE_HOME } from "@/lib/rbac/matrix";
+import { getOnboardingState } from "@/lib/rbac/onboarding.functions";
 
 /**
- * Role router: sends the signed-in user to the dashboard that matches their
- * highest role. Roles come from the database, never from the client.
+ * Role router. Reads the account's role, onboarding stage and approval state
+ * from the database and sends the user to the right place: setup if the
+ * profile isn't finished, the pending screen while an elevated request is
+ * under review, otherwise the dashboard for their role.
  */
 export const Route = createFileRoute("/dashboard/")({
   ssr: false,
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/dashboard/")({
     if (!data.session) {
       throw redirect({ to: "/login", search: { next: location.href } });
     }
-    const session = await getMySession();
-    throw redirect({ href: ROLE_HOME[session.role] });
+    const state = await getOnboardingState();
+    throw redirect({ href: state.redirectTo });
   },
 });

@@ -33,7 +33,7 @@ export const Route = createFileRoute("/signup")({
   beforeLoad: async () => {
     // Nothing to join until the institution owner has completed first-run setup.
     const { needsSetup } = await getSetupState();
-    if (needsSetup) throw redirect({ to: "/setup/" });
+    if (needsSetup) throw redirect({ to: "/setup" });
   },
   head: () => ({
     meta: [
