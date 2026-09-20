@@ -23,6 +23,8 @@ export interface OnboardingState {
   approvalStatus: "none" | "pending" | "approved" | "rejected" | "revoked";
   requestedRole: Role | null;
   isOwner: boolean;
+  /** Which setup questionnaire this account should fill in. */
+  setupRole: Role;
   setupData: SetupValues;
   /** Where this account belongs right now. */
   redirectTo: string;
@@ -53,13 +55,23 @@ const ROLE_HOME: Record<Role, string> = {
   super_admin: "/dashboard/super-admin",
 };
 
+/** HOD / administrator requesters complete their requested role's setup. */
+function setupRoleFor(role: Role, requested: Role | null, approval: string): Role {
+  if ((requested === "hod" || requested === "admin") && requested !== role && approval !== "rejected") {
+    return requested;
+  }
+  return role;
+}
+
 function destination(
   role: Role,
   onboarding: OnboardingStatus,
   approval: OnboardingState["approvalStatus"],
   requested: Role | null,
 ): string {
-  if (onboarding !== "completed") return `/setup/${SETUP_SLUG[role]}`;
+  if (onboarding !== "completed") {
+    return `/setup/${SETUP_SLUG[setupRoleFor(role, requested, approval)]}`;
+  }
   if (approval === "pending" && requested && requested !== role) return "/pending-approval";
   return ROLE_HOME[role];
 }
@@ -147,6 +159,7 @@ async function loadState(context: {
     approvalStatus,
     requestedRole,
     isOwner: !!profile.is_owner,
+    setupRole: setupRoleFor(role, requestedRole, approvalStatus),
     setupData: (profile.setup_data ?? {}) as SetupValues,
     redirectTo: destination(role, onboardingStatus, approvalStatus, requestedRole),
   };
@@ -244,7 +257,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     if (pErr) throw new Error(pErr.message);
 
     const base = { profile_id: state.profileId };
-    if (state.role === "student") {
+    if (state.setupRole === "student") {
       await supabase.from("student_profiles").upsert({
         ...base,
         roll_no: str(v["rollNo"]),
@@ -260,7 +273,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
         skills: list(v["skills"]),
         hobbies: list(v["hobbies"]),
       });
-    } else if (state.role === "faculty") {
+    } else if (state.setupRole === "faculty") {
       await supabase.from("faculty_profiles").upsert({
         ...base,
         employee_id: str(v["employeeId"]),
