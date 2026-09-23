@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          awarded_on: string | null
+          category: string
+          created_at: string
+          description: string | null
+          evidence_url: string | null
+          id: string
+          issuer: string | null
+          points: number
+          profile_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          awarded_on?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          issuer?: string | null
+          points?: number
+          profile_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          awarded_on?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          issuer?: string | null
+          points?: number
+          profile_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_profiles: {
         Row: {
           admin_department: string | null
@@ -302,6 +352,57 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_loans: {
+        Row: {
+          book_id: string
+          created_at: string
+          due_at: string
+          id: string
+          profile_id: string
+          reserved_at: string
+          returned_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          profile_id: string
+          reserved_at?: string
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          profile_id?: string
+          reserved_at?: string
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_loans_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "library_books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_loans_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1144,6 +1245,161 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          note: string | null
+          profile_id: string
+          saved: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          note?: string | null
+          profile_id: string
+          saved?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          note?: string | null
+          profile_id?: string
+          saved?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_openings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_openings: {
+        Row: {
+          apply_by: string | null
+          company: string
+          created_at: string
+          description: string | null
+          eligibility: string | null
+          id: string
+          kind: string
+          location: string | null
+          mode: string | null
+          package_lpa: number | null
+          posted_by: string | null
+          role_title: string
+          skills: string[]
+          stipend: string | null
+          updated_at: string
+        }
+        Insert: {
+          apply_by?: string | null
+          company: string
+          created_at?: string
+          description?: string | null
+          eligibility?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          mode?: string | null
+          package_lpa?: number | null
+          posted_by?: string | null
+          role_title: string
+          skills?: string[]
+          stipend?: string | null
+          updated_at?: string
+        }
+        Update: {
+          apply_by?: string | null
+          company?: string
+          created_at?: string
+          description?: string | null
+          eligibility?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          mode?: string | null
+          package_lpa?: number | null
+          posted_by?: string | null
+          role_title?: string
+          skills?: string[]
+          stipend?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_openings_posted_by_fkey"
+            columns: ["posted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      library_books: {
+        Row: {
+          author: string
+          available_copies: number
+          category: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          isbn: string | null
+          location: string | null
+          title: string
+          total_copies: number
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          available_copies?: number
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          location?: string | null
+          title: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          available_copies?: number
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          location?: string | null
+          title?: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           attachment_name: string | null
@@ -1274,6 +1530,39 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paper_bookmarks: {
+        Row: {
+          created_at: string
+          paper_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          paper_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          paper_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paper_bookmarks_paper_id_fkey"
+            columns: ["paper_id"]
+            isOneToOne: false
+            referencedRelation: "research_papers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paper_bookmarks_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1558,6 +1847,47 @@ export type Database = {
           },
         ]
       }
+      reminders: {
+        Row: {
+          created_at: string
+          done: boolean
+          due_at: string
+          id: string
+          notes: string | null
+          profile_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          due_at: string
+          id?: string
+          notes?: string | null
+          profile_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          due_at?: string
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           created_at: string
@@ -1598,6 +1928,56 @@ export type Database = {
             columns: ["reporter_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_papers: {
+        Row: {
+          abstract: string | null
+          authors: string[]
+          created_at: string
+          department_id: string | null
+          id: string
+          tags: string[]
+          title: string
+          updated_at: string
+          url: string | null
+          venue: string | null
+          year: number | null
+        }
+        Insert: {
+          abstract?: string | null
+          authors?: string[]
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          url?: string | null
+          venue?: string | null
+          year?: number | null
+        }
+        Update: {
+          abstract?: string | null
+          authors?: string[]
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          url?: string | null
+          venue?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_papers_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
@@ -1926,6 +2306,50 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          language: string
+          large_text: boolean
+          notifications: Json
+          profile_id: string
+          reduce_motion: boolean
+          theme: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          language?: string
+          large_text?: boolean
+          notifications?: Json
+          profile_id: string
+          reduce_motion?: boolean
+          theme?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          language?: string
+          large_text?: boolean
+          notifications?: Json
+          profile_id?: string
+          reduce_motion?: boolean
+          theme?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
